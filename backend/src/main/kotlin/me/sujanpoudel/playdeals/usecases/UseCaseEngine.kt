@@ -1,4 +1,4 @@
-package me.sujanpoudel.playdeals
+package me.sujanpoudel.playdeals.usecases
 
 import com.github.michaelbull.result.andThen
 import com.github.michaelbull.result.runCatching
@@ -23,12 +23,11 @@ object UseCaseExecutor {
     toContext: () -> Request,
     toInput: (Request) -> Input,
     toResponse: (Output) -> Response
-  ) =
-    runCatching { toContext.invoke() }
-      .andThen { runCatching { (it as? Validated)?.validate(); it } }
-      .andThen { runCatching { toInput.invoke(it) } }
-      .andThen { runCatching { useCase.execute(it) } }
-      .andThen { runCatching { toResponse(it) } }
+  ) = runCatching { toContext.invoke() }
+    .andThen { runCatching { (it as? Validated)?.validate(); it } }
+    .andThen { runCatching { toInput.invoke(it) } }
+    .andThen { runCatching { useCase.execute(it) } }
+    .andThen { runCatching { toResponse(it) } }
 
   // some params - no response
   suspend fun <Request, Input> execute(
@@ -45,6 +44,5 @@ object UseCaseExecutor {
   suspend fun <Response, Output> execute(
     useCase: UseCase<Unit, Output>,
     toResponse: (Output) -> Response
-  ) =
-    execute(useCase, {}, { }, toResponse)
+  ) = execute(useCase, {}, { }, toResponse)
 }

@@ -11,15 +11,18 @@ import io.vertx.pgclient.PgPool
 import io.vertx.sqlclient.PoolOptions
 import me.sujanpoudel.playdeals.api.ApiVerticle
 import me.sujanpoudel.playdeals.api.health.DBHealthUseCase
-import me.sujanpoudel.playdeals.jobs.AppDetailScrapJob
-import me.sujanpoudel.playdeals.jobs.RecurrentJobVerticle
-import me.sujanpoudel.playdeals.jobs.ScrapReddit
+import me.sujanpoudel.playdeals.jobs.AppDetailScrapper
+import me.sujanpoudel.playdeals.jobs.BackgroundJobsVerticle
+import me.sujanpoudel.playdeals.jobs.RedditPostsScrapper
 import me.sujanpoudel.playdeals.repositories.AppDealRepository
-import me.sujanpoudel.playdeals.repositories.PotentialDealRepository
+import me.sujanpoudel.playdeals.repositories.KeyValuesRepository
 import org.flywaydb.core.Flyway
 import org.jobrunr.configuration.JobRunr
+import org.jobrunr.configuration.JobRunrConfiguration
+import org.jobrunr.dashboard.JobRunrDashboardWebServerConfiguration
 import org.jobrunr.server.BackgroundJobServerConfiguration
 import org.jobrunr.server.JobActivator
+import org.jobrunr.storage.StorageProvider
 import org.jobrunr.storage.sql.common.SqlStorageProviderFactory
 import org.kodein.di.DI
 import org.kodein.di.bindSingleton
@@ -40,7 +43,7 @@ object DIConfigurer {
     bindSingleton { conf }
 
     bindSingleton { ApiVerticle(di = this) }
-    bindSingleton { RecurrentJobVerticle(di = this) }
+    bindSingleton { BackgroundJobsVerticle(di = di) }
 
     bindSingleton { DeliveryOptions().setSendTimeout(5000) }
 
@@ -49,7 +52,7 @@ object DIConfigurer {
     bindSingleton {
       MainVerticle(
         apiVerticle = instance(),
-        recurrentJobVerticle = instance(),
+        backgroundJobsVerticle = instance(),
         flywayVerticle = instance(),
       )
     }
@@ -87,38 +90,57 @@ object DIConfigurer {
       PgPool.pool(vertx, instance<PgConnectOptions>(), PoolOptions())
     }
 
+    bindSingleton<JobActivator> {
+      object : JobActivator {
+        override fun <T : Any> activateJob(type: Class<T>): T {
+          return directDI.Instance(erased(type))
+        }
+      }
+    }
+
+    bindSingleton<StorageProvider> {
+      SqlStorageProviderFactory.using(
+        PGSimpleDataSource().apply {
+          setURL("jdbc:postgresql://${conf.db.host}:${conf.db.port}/${conf.db.name}?currentSchema=job_runr")
+          user = conf.db.username
+          password = conf.db.password
+        }
+      )
+    }
+
+
     bindSingleton {
       JobRunr.configure()
-        .useStorageProvider(
-
-          SqlStorageProviderFactory.using(
-            PGSimpleDataSource().apply {
-              setURL("jdbc:postgresql://${conf.db.host}:${conf.db.port}/${conf.db.name}?currentSchema=job_runr")
-              user = conf.db.username
-              password = conf.db.password
-            }
-          )
+        .useStorageProvider(instance())
+        .useDashboardIf(
+          conf.backgroundTask.dashboardEnabled,
+          JobRunrDashboardWebServerConfiguration
+            .usingStandardDashboardConfiguration()
+            .andBasicAuthentication(conf.backgroundTask.dashboardUserName, conf.backgroundTask.dashboardPassword)
         )
-        .useDashboard()
-        .useJobActivator(object : JobActivator {
-          override fun <T : Any> activateJob(type: Class<T>): T {
-            return directDI.Instance(erased(type))
-          }
-        })
+        .useJobActivator(instance())
         .useBackgroundJobServer(
           BackgroundJobServerConfiguration.usingStandardBackgroundJobServerConfiguration()
-            .andDeleteSucceededJobsAfter(Duration.ofSeconds(10))
+            .andDeleteSucceededJobsAfter(Duration.ofHours(6))
             .andWorkerCount(1)
             .andPollIntervalInSeconds(10)
         )
         .initialize()
-        .jobScheduler
+    }
+
+    bindSingleton {
+      instance<JobRunrConfiguration.JobRunrConfigurationResult>().jobScheduler
+    }
+
+    bindSingleton {
+      instance<JobRunrConfiguration.JobRunrConfigurationResult>().jobRequestScheduler
     }
 
     bindSingleton { AppDealRepository(sqlClient = instance()) }
-    bindSingleton { PotentialDealRepository(sqlClient = instance()) }
-    bindSingleton { ScrapReddit(this) }
-    bindSingleton { AppDetailScrapJob }
+    bindSingleton { KeyValuesRepository(sqlClient = instance()) }
+
+    bindSingleton { RedditPostsScrapper(di) }
+    bindSingleton { AppDetailScrapper(di) }
   }
 
   private fun configureObjectMapper(): ObjectMapper {

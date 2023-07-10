@@ -2,7 +2,7 @@ package me.sujanpoudel.playdeals.api.health
 
 import io.vertx.kotlin.coroutines.await
 import io.vertx.sqlclient.SqlClient
-import me.sujanpoudel.playdeals.UseCase
+import me.sujanpoudel.playdeals.usecases.UseCase
 
 class DBHealthUseCase(
   private val sqlClient: SqlClient

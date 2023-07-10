@@ -31,9 +31,8 @@ abstract class IntegrationTest(private val vertx: Vertx) {
   protected val httpClient: WebClient by lazy { WebClient.create(vertx) }
 
   private val conf = Conf(
-    app = Conf.App(8888),
+    api = Conf.Api(8888, cors = ".*."),
     environment = Environment.TEST,
-    cors = ".*.",
     db = Conf.DB(
       host = postgresqlContainer.host,
       port = postgresqlContainer.firstMappedPort,
@@ -42,6 +41,11 @@ abstract class IntegrationTest(private val vertx: Vertx) {
       password = DB_PASSWORD,
       3
     ),
+    backgroundTask = Conf.BackgroundTask(
+      false,
+      "admin",
+      "admin"
+    )
   )
 
   var di = DIConfigurer.configure(vertx, conf)
@@ -80,8 +84,8 @@ abstract class IntegrationTest(private val vertx: Vertx) {
 
     @JvmStatic
     protected val CLEAN_UP_DB_QUERY = """
-      DELETE FROM "app_deal" where True;
-      DELETE FROM "potential_deal" where True;
+      DELETE FROM "app_deal" WHERE True;
+      DELETE FROM "key_value_store" WHERE True;
     """.trimIndent()
 
     @Container

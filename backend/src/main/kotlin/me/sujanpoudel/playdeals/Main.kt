@@ -16,6 +16,7 @@ val log: KLogger = KotlinLogging.logger {}
 class BootstrapException(val violations: List<String>) : RuntimeException()
 
 fun main() {
+
   val vertx = Vertx.vertx()
   val conf = when (val result = buildConf(System.getenv())) {
     is Ok -> result.value
@@ -40,10 +41,14 @@ fun buildConf(env: Map<String, String>) = runCatching {
 
   val violations = mutableListOf<String>()
 
-  val environment = (env["ENV"] ?: Environment.PRODUCTION.name).asEnumOrNull<Environment>()
+  val environment = env.getOrDefault("ENV", Environment.PRODUCTION.name).asEnumOrNull<Environment>()
 
   if (environment == null)
     violations += "Invalid ENV"
+
+  val dashboardEnabled = env.getOrDefault("DASHBOARD", "true").toBooleanStrictOrNull()
+  if (dashboardEnabled == null)
+    violations += "Invalid DASHBOARD"
 
   val appPort = (env.getOrDefault("APP_PORT", "8888")).toIntOrNull()
 
@@ -53,6 +58,7 @@ fun buildConf(env: Map<String, String>) = runCatching {
   val dbPort = env.getOrDefault("DB_PORT", "5432").toIntOrNull()
   if (dbPort == null)
     violations += "Invalid DB_PORT"
+
   val dbName = env.getOrDefault("DB_NAME", "play_deals")
   val dbPoolSize = (env["DB_POOL_SIZE"] ?: "5").toIntOrNull()
   if (dbPoolSize == null)
@@ -68,7 +74,6 @@ fun buildConf(env: Map<String, String>) = runCatching {
 
   lateinit var dbHost: String
   lateinit var dbUsername: String
-  val dbPassword = env.getOrDefault("DB_PASSWORD", "password")
   withEnvVar("DB_HOST") { dbHost = it }
   withEnvVar("DB_USERNAME") { dbUsername = it }
 
@@ -76,16 +81,23 @@ fun buildConf(env: Map<String, String>) = runCatching {
     throw BootstrapException(violations)
   } else {
     Conf(
-      app = Conf.App(appPort!!),
+      api = Conf.Api(
+        appPort!!,
+        cors = env.getOrDefault("CORS", ".*."),
+      ),
       environment = environment!!,
-      cors = env.getOrDefault("CORS", ".*."),
       db = Conf.DB(
         host = dbHost,
         port = dbPort!!,
         name = dbName,
         username = dbUsername,
-        password = dbPassword,
+        password = env.getOrDefault("DB_PASSWORD", "password"),
         poolSize = dbPoolSize!!
+      ),
+      backgroundTask = Conf.BackgroundTask(
+        dashboardEnabled!!,
+        env.getOrDefault("DASHBOARD_USER", "admin"),
+        env.getOrDefault("DASHBOARD_PASS", "admin"),
       )
     )
   }

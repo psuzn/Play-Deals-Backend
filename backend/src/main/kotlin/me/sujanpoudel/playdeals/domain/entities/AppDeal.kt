@@ -11,10 +11,10 @@ data class AppDeal(
   val currentPrice: Float,
   val currency: String,
   val storeUrl: String,
-  val expired: Boolean,
   val category: String,
   val downloads: String,
   val rating: String,
+  val offerExpiresIn: Instant,
   val createdAt: Instant,
   val updatedAt: Instant
 )

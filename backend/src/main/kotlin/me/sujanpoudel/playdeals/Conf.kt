@@ -8,11 +8,10 @@ enum class Environment {
 
 data class Conf(
   val db: DB,
-  val app: App,
+  val api: Api,
   val environment: Environment,
-  val cors: String
+  val backgroundTask: BackgroundTask
 ) {
-
   data class DB(
     val host: String,
     val port: Int,
@@ -22,5 +21,12 @@ data class Conf(
     val poolSize: Int,
   )
 
-  data class App(val port: Int)
+
+  data class BackgroundTask(
+    val dashboardEnabled: Boolean,
+    val dashboardUserName: String,
+    val dashboardPassword: String
+  )
+
+  data class Api(val port: Int, val cors: String)
 }

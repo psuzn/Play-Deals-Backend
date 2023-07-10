@@ -17,13 +17,3 @@ CREATE TABLE app_deal
   updated_at    timestamp not null default current_timestamp
 );
 
-CREATE TABLE potential_deal
-(
-  id                 text      not null primary key unique default gen_random_uuid(),
-  scrap_attempts      int       not null                    default 0,
-  last_scrap_attempt_at timestamp null                        default null,
-  source             text      not null,
-
-  created_at          timestamp not null                    default now(),
-  updated_at          timestamp not null                    default current_timestamp
-)

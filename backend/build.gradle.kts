@@ -28,6 +28,11 @@ jib {
   }
 }
 
+
+repositories {
+  maven("https://jitpack.io")
+}
+
 dependencies {
   implementation(kotlin("stdlib"))
   implementation("org.jetbrains.kotlinx:kotlinx-coroutines-core:${Versions.COROUTINES}")
@@ -43,9 +48,9 @@ dependencies {
     implementation("$vertx:vertx-lang-kotlin-coroutines")
     implementation("$vertx:vertx-lang-kotlin")
     implementation("$vertx:vertx-health-check")
+    implementation("$vertx:vertx-web-client")
 
     testImplementation("$vertx:vertx-junit5")
-    testImplementation("$vertx:vertx-web-client")
   }
 
   implementation("com.michael-bull.kotlin-result:kotlin-result:${Versions.KOTLIN_RESULT}")

@@ -23,7 +23,7 @@ class MainTest {
 
     val conf = buildConf(env).unwrap()
 
-    conf.app.port shouldBe 123
+    conf.api.port shouldBe 123
   }
 
   @Test
@@ -52,7 +52,7 @@ class MainTest {
     )
 
     val conf = buildConf(env).unwrap()
-    conf.app.port shouldBe 8888
+    conf.api.port shouldBe 8888
   }
 
   @Test
