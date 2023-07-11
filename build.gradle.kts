@@ -1,4 +1,5 @@
-import com.github.jengelman.gradle.plugins.shadow.ShadowPlugin
+@file:Suppress("UnstableApiUsage")
+
 import org.gradle.api.tasks.testing.logging.TestLogEvent
 import org.jetbrains.kotlin.gradle.plugin.KotlinPlatformJvmPlugin
 import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
@@ -6,8 +7,6 @@ import org.jlleitschuh.gradle.ktlint.KtlintPlugin
 
 plugins {
   kotlin("jvm") version Versions.KOTLIN
-  application
-  id("com.github.johnrengelman.shadow") version Versions.SHADOW
   id("org.jlleitschuh.gradle.ktlint") version "11.1.0"
 }
 
@@ -20,7 +19,6 @@ buildscript {
 allprojects {
   apply<KotlinPlatformJvmPlugin>()
   apply<JacocoPlugin>()
-  apply<ShadowPlugin>()
   apply<KtlintPlugin>()
 
   repositories {
@@ -49,4 +47,22 @@ tasks.withType<Test> {
       TestLogEvent.FAILED
     )
   }
+}
+
+task("preCommitHook") {
+  dependsOn(tasks.ktlintFormat)
+  dependsOn(tasks.ktlintCheck)
+}
+
+task("installPreCommitHook") {
+  delete(File(projectDir, ".git/hooks/pre-commit"))
+  copy {
+    from(File(projectDir, "pre-commit"))
+    into(File(projectDir, ".git/hooks"))
+    fileMode = 0b111101101
+  }
+}
+
+tasks.withType<Assemble>() {
+  dependsOn("installPreCommitHook")
 }

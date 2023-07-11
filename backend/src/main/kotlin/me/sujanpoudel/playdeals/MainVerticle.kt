@@ -11,7 +11,6 @@ class MainVerticle(
   private val backgroundJobsVerticle: BackgroundJobsVerticle
 ) : CoroutineVerticle() {
 
-
   override suspend fun start() {
     vertx.deployVerticle(flywayVerticle).await()
     vertx.deployVerticle(backgroundJobsVerticle).await()

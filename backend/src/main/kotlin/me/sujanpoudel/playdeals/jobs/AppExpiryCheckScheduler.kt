@@ -12,14 +12,12 @@ import org.kodein.di.instance
 import java.time.Duration
 import java.util.UUID
 
-
 class AppExpiryCheckScheduler(
   override val di: DI
 ) : CoJobRequestHandler<AppExpiryCheckScheduler.Request>(), DIAware {
 
   private val repository by instance<AppDealRepository>()
   private val requestScheduler by instance<JobRequestScheduler>()
-
 
   override suspend fun handleRequest(jobRequest: Request): Unit = loggingExecutionTime(
     "$SIMPLE_NAME:: handleRequest"
@@ -38,7 +36,6 @@ class AppExpiryCheckScheduler(
   companion object {
     val JOB_ID: UUID = UUID.nameUUIDFromBytes("AppExpiryCheckScheduler".toByteArray())
   }
-
 }
 
 fun AppExpiryCheckScheduler.Request.asRecurringRequest() = RecurringJobBuilder.aRecurringJob()
@@ -46,4 +43,3 @@ fun AppExpiryCheckScheduler.Request.asRecurringRequest() = RecurringJobBuilder.a
   .withName("AppExpiryCheckScheduler")
   .withId(AppExpiryCheckScheduler.JOB_ID.toString())
   .withDuration(Duration.ofHours(6))
-

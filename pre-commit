@@ -1,0 +1,9 @@
+#!/bin/bash
+echo "Starting pre-commit hook"
+
+./gradlew preCommitHook
+
+RESULT=$?
+
+[ $RESULT -ne 0 ] && exit $RESULT
+exit 0

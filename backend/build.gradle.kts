@@ -2,6 +2,7 @@ import com.github.jengelman.gradle.plugins.shadow.tasks.ShadowJar
 
 plugins {
   application
+  id("com.github.johnrengelman.shadow") version Versions.SHADOW
   id("com.google.cloud.tools.jib") version "3.3.1"
 }
 
@@ -22,12 +23,16 @@ jib {
   from {
     image = "openjdk:17-slim"
   }
+
+  to {
+    image = "play-deals-backend"
+  }
+
   container {
     mainClass = launcherClassName
-    ports = listOf("8888")
+    ports = listOf("8888", "8000")
   }
 }
-
 
 repositories {
   maven("https://jitpack.io")
@@ -83,6 +88,7 @@ dependencies {
 
 tasks.withType<ShadowJar> {
   archiveClassifier.set("fat")
+  archiveFileName.set("play-deals-backend.jar")
   manifest {
     attributes(mapOf("Main-Verticle" to mainVerticleName))
   }

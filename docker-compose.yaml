@@ -1,0 +1,30 @@
+version: '3.1'
+volumes:
+  pgdata:
+
+services:
+  play-deals-backend:
+    image: play-deals-backend
+    environment:
+      - DB_HOST=postgres
+      - DB_USERNAME=play-deals
+      - DB_PASSWORD=play-deals
+      - DB_NAME=play-deals
+    ports:
+      - "8888:8888"
+      - "8000:8000"
+    depends_on:
+      - postgres
+
+  postgres:
+    ports:
+      - "5432:5432"
+    image: postgres:15.3
+    restart: unless-stopped
+    environment:
+      - POSTGRES_PASSWORD=play-deals
+      - POSTGRES_USER=play-deals
+      - POSTGRES_DB=play-deals
+      - PGDATA=/var/lib/postgresql/data/pgdata
+    volumes:
+      - pgdata:/var/lib/postgresql/data

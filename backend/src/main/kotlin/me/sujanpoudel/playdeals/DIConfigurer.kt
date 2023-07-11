@@ -108,7 +108,6 @@ object DIConfigurer {
       )
     }
 
-
     bindSingleton {
       JobRunr.configure()
         .useStorageProvider(instance())
