@@ -1,3 +1,4 @@
+@file:Suppress("UnstableApiUsage")
 
 import org.gradle.api.tasks.testing.logging.TestLogEvent
 import org.jetbrains.kotlin.gradle.plugin.KotlinPlatformJvmPlugin
@@ -46,4 +47,24 @@ tasks.withType<Test> {
       TestLogEvent.FAILED
     )
   }
+}
+
+task("preCommitHook") {
+  dependsOn(tasks.ktlintFormat)
+  dependsOn(tasks.ktlintCheck)
+}
+
+
+
+task("installPreCommitHook") {
+  delete(File(projectDir, ".git/hooks/pre-commit"))
+  copy {
+    from(File(projectDir, "pre-commit"))
+    into(File(projectDir, ".git/hooks"))
+    fileMode = 777
+  }
+}
+
+tasks.withType<Assemble>() {
+  dependsOn("installPreCommitHook")
 }
