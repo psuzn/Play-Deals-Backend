@@ -6,6 +6,9 @@ on:
 jobs:
   build:
     runs-on: ubuntu-latest
+    env:
+      IMAGE_REGISTRY: ghcr.io/${{ github.repository_owner }}
+      IMAGE_NAME: ${{ github.event.repository.name }}
 
     steps:
       - uses: actions/checkout@v3
@@ -25,12 +28,11 @@ jobs:
 
       - name: Build and publish image with jib
         if: ${{ github.ref == 'refs/heads/main' }}
-        uses: MathieuSoysal/jib-container-publish.yml@v2.0.7
-        with:
-          REGISTRY: ghcr.io
-          IMAGE_NAME: ${{ github.repository }}
-          tag-name: ${{ github.sha }}
-          USERNAME: ${{ github.actor }}
-          PASSWORD: ${{ secrets.GITHUB_TOKEN }}
-          java-version: 17
+        run: |
+          ./gradlew jib \
+              -Djib.to.image=$IMAGE_REGISTRY/$IMAGE_NAME \
+              -Djib.to.tags=${{ github.sha }} \
+              -Djib.to.auth.username=${{ github.actor }} \
+              -Djib.to.auth.password=${{ github.token }}
+
 
