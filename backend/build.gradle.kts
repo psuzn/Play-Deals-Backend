@@ -22,9 +22,14 @@ jib {
   from {
     image = "openjdk:17-slim"
   }
+
+  to {
+    image = "play-deals-backend"
+  }
+
   container {
     mainClass = launcherClassName
-    ports = listOf("8888")
+    ports = listOf("8888", "8000")
   }
 }
 
@@ -83,6 +88,7 @@ dependencies {
 
 tasks.withType<ShadowJar> {
   archiveClassifier.set("fat")
+  archiveFileName.set("play-deals-backend.jar")
   manifest {
     attributes(mapOf("Main-Verticle" to mainVerticleName))
   }
