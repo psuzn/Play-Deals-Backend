@@ -54,14 +54,12 @@ task("preCommitHook") {
   dependsOn(tasks.ktlintCheck)
 }
 
-
-
 task("installPreCommitHook") {
   delete(File(projectDir, ".git/hooks/pre-commit"))
   copy {
     from(File(projectDir, "pre-commit"))
     into(File(projectDir, ".git/hooks"))
-    fileMode = 777
+    fileMode = 0b111101101
   }
 }
 
