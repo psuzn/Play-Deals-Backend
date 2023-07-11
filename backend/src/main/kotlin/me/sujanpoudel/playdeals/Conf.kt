@@ -21,7 +21,6 @@ data class Conf(
     val poolSize: Int,
   )
 
-
   data class BackgroundTask(
     val dashboardEnabled: Boolean,
     val dashboardUserName: String,

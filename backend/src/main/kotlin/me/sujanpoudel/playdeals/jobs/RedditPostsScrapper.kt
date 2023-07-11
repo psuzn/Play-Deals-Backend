@@ -23,7 +23,6 @@ data class RedditPost(
   val content: String
 )
 
-
 class RedditPostsScrapper(
   override val di: DI
 ) : CoJobRequestHandler<RedditPostsScrapper.Request>(), DIAware {
@@ -46,11 +45,10 @@ class RedditPostsScrapper(
     val lastRedditPost = keyValueRepository.get<String>(LAST_REDDIT_POST)
 
     val posts = loggingExecutionTime(
-      "$SIMPLE_NAME:: Fetched reddit post, last post id was : '${lastRedditPost}'"
+      "$SIMPLE_NAME:: Fetched reddit post, last post id was : '$lastRedditPost'"
     ) {
       getLatestRedditPosts(lastRedditPost)
     }
-
 
     val appLinks = posts.flatMap { post ->
       PLAY_CONSOLE_REGX.matchEntire(post.content)?.groups.orEmpty()
@@ -60,7 +58,6 @@ class RedditPostsScrapper(
     }.distinct()
 
     log.info("$SIMPLE_NAME:: got ${posts.size} new posts (${appLinks.size} Links)")
-
 
     appLinks.forEach { packageName ->
       val id = UUID.nameUUIDFromBytes(packageName.toByteArray())
@@ -112,10 +109,9 @@ class RedditPostsScrapper(
     const val LAST_REDDIT_POST = "LAST_REDDIT_POST"
 
     val JOB_ID: UUID = UUID.nameUUIDFromBytes("Reddit Posts".toByteArray())
-    val PLAY_CONSOLE_REGX = Regex("https://play\\.google\\.com/store/apps/details\\?id=([(a-zA-Z-0-9.]+)");
+    val PLAY_CONSOLE_REGX = Regex("https://play\\.google\\.com/store/apps/details\\?id=([(a-zA-Z-0-9.]+)")
   }
 }
-
 
 fun RedditPostsScrapper.Request.asJob(
   duration: Duration = Duration.ofHours(1)

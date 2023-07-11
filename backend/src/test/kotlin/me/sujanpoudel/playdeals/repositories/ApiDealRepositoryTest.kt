@@ -49,7 +49,6 @@ class ApiDealRepositoryTest(vertx: Vertx) : IntegrationTest(vertx) {
     appDeal.shouldBeEqualToComparingFields(appDealFromDb)
   }
 
-
   @Test
   fun `should perform update if item with id already exists`() = runTest {
 

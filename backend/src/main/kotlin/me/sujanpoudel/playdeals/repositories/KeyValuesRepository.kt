@@ -17,7 +17,7 @@ class KeyValuesRepository(
       INSERT INTO "key_value_store" VALUES ($1,$2)
           ON CONFLICT(key) DO UPDATE SET value = $2
       RETURNING *
-    """.trimIndent()
+      """.trimIndent()
     ).exec(key, value)
       .await()
       .first()
@@ -28,7 +28,7 @@ class KeyValuesRepository(
     return sqlClient.preparedQuery(
       """
       SELECT * FROM "key_value_store" WHERE key = $1
-    """.trimIndent()
+      """.trimIndent()
     ).exec(key)
       .await()
       .firstOrNull()?.asKeyValue<T>()?.value
@@ -38,10 +38,8 @@ class KeyValuesRepository(
     sqlClient.preparedQuery(
       """
      DELETE FROM "key_value_store" WHERE key = $1
-    """.trimIndent()
+      """.trimIndent()
     ).exec(key)
       .await()
-
   }
-
 }

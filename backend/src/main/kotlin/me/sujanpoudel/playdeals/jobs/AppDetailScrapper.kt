@@ -57,24 +57,24 @@ class AppDetailScrapper(
 
     when {
       app.normalPrice == 0f -> {
-        log.info("App ${packageName}(${app.name}) doesn't have any price")
+        log.info("App $packageName(${app.name}) doesn't have any price")
         repository.delete(packageName)
       }
 
       app.normalPrice == app.currentPrice -> {
-        log.info("App ${packageName}(${app.name}) deals has been expired")
+        log.info("App $packageName(${app.name}) deals has been expired")
         repository.delete(packageName)
       }
 
       (app.currentPrice ?: 0f) < app.normalPrice -> {
-        log.info("Found deal for ${packageName}(${app.name}) ${app.currentPrice} ${app.currency}(${app.normalPrice} ${app.currency})")
+        log.info("Found deal for $packageName(${app.name}) ${app.currentPrice} ${app.currency}(${app.normalPrice} ${app.currency})")
         repository.upsert(app.asNewAppDeal())
       }
     }
   }
 
   private suspend fun getAppDetail(packageName: String): AppDetail {
-    val response = webClient.get("/store/apps/details?id=${packageName}&hl=en&gl=us")
+    val response = webClient.get("/store/apps/details?id=$packageName&hl=en&gl=us")
       .send()
       .await()
 
@@ -124,6 +124,7 @@ class AppDetailScrapper(
     )
   }
 
+  @Suppress("UNCHECKED_CAST")
   private fun <T> JsonObject.getValueOrNull(value: Value): T? {
 
     return try {
@@ -133,6 +134,7 @@ class AppDetailScrapper(
     }
   }
 
+  @Suppress("UNCHECKED_CAST")
   fun <T> JsonObject.getValue(value: Value): T {
     return getValue(getJsonArray(value.root), value.path.toTypedArray()) as T
   }

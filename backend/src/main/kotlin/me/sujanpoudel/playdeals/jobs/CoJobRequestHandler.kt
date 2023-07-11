@@ -10,5 +10,4 @@ abstract class CoJobRequestHandler<T : JobRequest> : JobRequestHandler<T> {
   }
 
   abstract suspend fun handleRequest(jobRequest: T)
-
 }

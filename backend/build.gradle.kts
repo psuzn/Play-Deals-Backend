@@ -2,6 +2,7 @@ import com.github.jengelman.gradle.plugins.shadow.tasks.ShadowJar
 
 plugins {
   application
+  id("com.github.johnrengelman.shadow") version Versions.SHADOW
   id("com.google.cloud.tools.jib") version "3.3.1"
 }
 
@@ -32,7 +33,6 @@ jib {
     ports = listOf("8888", "8000")
   }
 }
-
 
 repositories {
   maven("https://jitpack.io")
