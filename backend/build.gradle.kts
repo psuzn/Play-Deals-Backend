@@ -3,7 +3,7 @@ import com.github.jengelman.gradle.plugins.shadow.tasks.ShadowJar
 plugins {
   application
   id("com.github.johnrengelman.shadow") version Versions.SHADOW
-  id("com.google.cloud.tools.jib") version "3.3.1"
+  id("com.google.cloud.tools.jib") version "3.3.2"
 }
 
 group = Artifact.GROUP
@@ -31,11 +31,8 @@ jib {
   container {
     mainClass = launcherClassName
     ports = listOf("8888", "8000")
+    labels.put("org.opencontainers.image.source", "https://github.com/psuzn/play-deals-backend")
   }
-}
-
-repositories {
-  maven("https://jitpack.io")
 }
 
 dependencies {
