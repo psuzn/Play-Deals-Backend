@@ -11,7 +11,7 @@ imageRepo := "ghcr.io/psuzn/play-deals-backend"
 dev-run-backend:
   ./gradlew backend:run
 
-build-push-image:
+build-push-image imageTag=tag:
     #!/usr/bin/env sh
     tags="{{tag}},latest"
     ./gradlew jib  \
