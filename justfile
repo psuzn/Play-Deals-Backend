@@ -5,15 +5,44 @@ default:
 
 namespace:= "play-deals-backend"
 serviceAccountName:= "play-deals-backend-deployer"
+tag := "$(git rev-parse --short HEAD)"
+imageRepo := "ghcr.io/psuzn/play-deals-backend"
 
 dev-run-backend:
   ./gradlew backend:run
+
+build-push-image:
+    #!/usr/bin/env sh
+    tags="{{tag}},latest"
+    ./gradlew jib  \
+        -Djib.to.image={{imageRepo}} \
+        -Djib.to.tags=$tags \
+        -Djib.to.auth.username=$DOCKER_USER \
+        -Djib.to.auth.password=$DOCKER_PASSWORD
+
+    echo Pushed tags $tags
 
 ns-create:
     kubectl create namespace {{ namespace }}
 
 ns-delete:
     kubectl delete namespace {{ namespace }}
+
+# Runs helm upgrade
+helm-upgrade imageTag=tag:
+    #!/usr/bin/env sh
+    echo "Deploying {{imageRepo}}:{{imageTag}} to $(kubectl config current-context)"
+    helm upgrade play-deals-backend --create-namespace \
+        --install --namespace {{namespace}} ./helm/backend \
+        --set db.host=$DB_HOST \
+        --set db.port=$JWT_SECRET \
+        --set db.username=$JWT_SECRET \
+        --set db.password=$JWT_SECRET \
+        --set db.name=$JWT_SECRET \
+        --set backgroundTask.dashboard=$JWT_SECRET \
+        --set backgroundTask.dashboardUser=$JWT_SECRET \
+        --set backgroundTask.dashboardPass=$JWT_SECRET \
+        --set image.tag={{imageTag}}
 
 helm-create-deployer:
     echo "Creating deployer service account to $(kubectl config current-context)"

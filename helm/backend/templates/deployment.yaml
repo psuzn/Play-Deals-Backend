@@ -1,0 +1,83 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ include "backend.fullname" . }}
+  labels:
+    {{- include "backend.labels" . | nindent 4 }}
+spec:
+  {{- if not .Values.autoscaling.enabled }}
+  replicas: {{ .Values.replicaCount }}
+  {{- end }}
+  selector:
+    matchLabels:
+      {{- include "backend.selectorLabels" . | nindent 6 }}
+  template:
+    metadata:
+      {{- with .Values.podAnnotations }}
+      annotations:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      labels:
+        {{- include "backend.selectorLabels" . | nindent 8 }}
+    spec:
+      {{- with .Values.imagePullSecrets }}
+      imagePullSecrets:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      serviceAccountName: {{ include "backend.serviceAccountName" . }}
+      securityContext:
+        {{- toYaml .Values.podSecurityContext | nindent 8 }}
+      containers:
+        - name: {{ .Chart.Name }}
+          securityContext:
+            {{- toYaml .Values.securityContext | nindent 12 }}
+          image: "{{ .Values.image.repository }}:{{ .Values.image.tag | default .Chart.AppVersion }}"
+          imagePullPolicy: {{ .Values.image.pullPolicy }}
+          env:
+            - name: "DB_HOST"
+              value: {{ .Values.db.host | quote }}
+            - name: "DB_PORT"
+              value: {{ .Values.db.port | quote }}
+            - name: "DB_USERNAME"
+              value: {{ .Values.db.username | quote }}
+            - name: "DB_PASSWORD"
+              value: {{ .Values.db.password | quote }}
+            - name: "DB_NAME"
+              value: {{ .Values.db.name | quote }}
+            - name: "DASHBOARD"
+              value: {{ .Values.backgroundTask.dashboard | quote }}
+            - name: "DASHBOARD_USER"
+              value: {{ .Values.backgroundTask.dashboardUser | quote }}
+            - name: "DASHBOARD_PASS"
+              value: {{ .Values.backgroundTask.dashboardPass | quote }}
+          ports:
+            - name: api
+              containerPort: 8888
+              protocol: TCP
+            - name: dashboard
+              containerPort: 8000
+              protocol: TCP
+          livenessProbe:
+            initialDelaySeconds: 5
+            httpGet:
+              path: /health/liveness
+              port: api
+          readinessProbe:
+            initialDelaySeconds: 5
+            httpGet:
+              path: /health/readiness
+              port: api
+          resources:
+            {{- toYaml .Values.resources | nindent 12 }}
+      {{- with .Values.nodeSelector }}
+      nodeSelector:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with .Values.affinity }}
+      affinity:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with .Values.tolerations }}
+      tolerations:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
