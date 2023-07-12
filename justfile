@@ -35,22 +35,34 @@ helm-upgrade imageTag=tag:
     helm upgrade play-deals-backend --create-namespace \
         --install --namespace {{namespace}} ./helm/backend \
         --set db.host=$DB_HOST \
-        --set db.port=$JWT_SECRET \
-        --set db.username=$JWT_SECRET \
-        --set db.password=$JWT_SECRET \
-        --set db.name=$JWT_SECRET \
-        --set backgroundTask.dashboard=$JWT_SECRET \
-        --set backgroundTask.dashboardUser=$JWT_SECRET \
-        --set backgroundTask.dashboardPass=$JWT_SECRET \
-        --set image.tag={{imageTag}}
+        --set db.port=$DB_PORT \
+        --set db.username=$DB_USERNAME \
+        --set db.password=$DB_PASSWORD \
+        --set db.name=$DB_NAME \
+        --set backgroundTask.dashboard=$DASHBOARD \
+        --set backgroundTask.dashboardUser=$DASHBOARD_USER \
+        --set backgroundTask.dashboardPass=$DASHBOARD_PASS \
+        --set image.tag={{imageTag}} \
+        --set image.repository={{imageRepo}}
 
+# Uninstalls the helm chart
+helm-delete:
+    helm uninstall -n {{namespace}} play-deals-backend
+
+# creates a service account and token for a deployer
 helm-create-deployer:
     echo "Creating deployer service account to $(kubectl config current-context)"
-    helm install play-deals-backend-deployer ./helm/deployer \
+    helm install play-deals-backend-deployer ./helm/service-account \
         --namespace {{namespace}}  --create-namespace \
         --set serviceAccountName={{serviceAccountName}} \
         --set namespace={{namespace}}
 
+# deletes the deployer service account
+helm-delete-deployer:
+    echo "Deleting deployer service account to $(kubectl config current-context)"
+    helm uninstall play-deals-backend-deployer  --namespace {{namespace}}
+
+# gets the deployer kubeconfig
 deployer-cubeconfig:
     #!/usr/bin/env sh
     CLUSTER_NAME=$(kubectl config current-context)
@@ -78,9 +90,5 @@ deployer-cubeconfig:
       user:
         token: ${SA_TOKEN}
     "
-
-helm-delete-deployer:
-    echo "Deleting deployer service account to $(kubectl config current-context)"
-    helm uninstall play-deals-backend-deployer  --namespace {{namespace}}
 
 

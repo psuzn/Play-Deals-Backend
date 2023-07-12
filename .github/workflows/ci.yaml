@@ -25,10 +25,29 @@ jobs:
           arguments: build
 
       - name: Build and publish image with jib
-#        if: ${{ github.ref == 'refs/heads/main' }}
+        #        if: ${{ github.ref == 'refs/heads/main' }}
         run: just build-push-image
         env:
           DOCKER_USER: ${{ github.actor }}
           DOCKER_PASSWORD: ${{ github.token }}
+
+      - uses: actions-hub/kubectl@master
+        #        if: ${{ github.ref == 'refs/heads/main' }}
+        env:
+          KUBE_CONFIG: ${{ secrets.KUBE_CONFIG }}
+
+      - uses: azure/setup-helm@v3
+      - name: Deploy on k8
+        #        if: ${{ github.ref == 'refs/heads/main' }}
+        run: just helm-upgrade
+        env:
+          DB_HOST: ${{ secrets.DB_HOST }}
+          DB_USERNAME: ${{ secrets.DB_USERNAME }}
+          DB_PASSWORD: ${{ secrets.DB_PASSWORD }}
+          DB_PORT: ${{ secrets.DB_PORT }}
+          DB_NAME: ${{ secrets.DB_NAME }}
+          DASHBOARD: ${{ secrets.DASHBOARD }}
+          DASHBOARD_USER: ${{ secrets.DASHBOARD_USER }}
+          DASHBOARD_PASS: ${{ secrets.DASHBOARD_PASS }}
 
 
