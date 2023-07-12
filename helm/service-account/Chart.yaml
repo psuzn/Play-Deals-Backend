@@ -1,0 +1,4 @@
+apiVersion: v2
+name: play-deals-backend-deployer
+description: A Helm chart to create a service account, role and token in Kubernetes
+version: 0.1.0
