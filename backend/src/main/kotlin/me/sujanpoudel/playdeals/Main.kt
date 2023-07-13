@@ -16,7 +16,6 @@ val log: KLogger = KotlinLogging.logger {}
 class BootstrapException(val violations: List<String>) : RuntimeException()
 
 fun main() {
-
   val vertx = Vertx.vertx()
   val conf = when (val result = buildConf(System.getenv())) {
     is Ok -> result.value
@@ -38,38 +37,43 @@ fun main() {
 }
 
 fun buildConf(env: Map<String, String>) = runCatching {
-
   val violations = mutableListOf<String>()
 
   val environment = env.getOrDefault("ENV", Environment.PRODUCTION.name).asEnumOrNull<Environment>()
 
-  if (environment == null)
+  if (environment == null) {
     violations += "Invalid ENV"
+  }
 
   val dashboardEnabled = env.getOrDefault("DASHBOARD", "true").toBooleanStrictOrNull()
-  if (dashboardEnabled == null)
+  if (dashboardEnabled == null) {
     violations += "Invalid DASHBOARD"
+  }
 
   val appPort = (env.getOrDefault("APP_PORT", "8888")).toIntOrNull()
 
-  if (appPort == null)
+  if (appPort == null) {
     violations += "Invalid APP_PORT"
+  }
 
   val dbPort = env.getOrDefault("DB_PORT", "5432").toIntOrNull()
-  if (dbPort == null)
+  if (dbPort == null) {
     violations += "Invalid DB_PORT"
+  }
 
   val dbName = env.getOrDefault("DB_NAME", "play_deals")
   val dbPoolSize = (env["DB_POOL_SIZE"] ?: "5").toIntOrNull()
-  if (dbPoolSize == null)
+  if (dbPoolSize == null) {
     violations += "Invalid DB_POOL_SIZE"
+  }
 
   fun withEnvVar(envVarName: String, block: (String) -> Unit) {
     val value = env[envVarName]
-    if (value.isNullOrBlank())
+    if (value.isNullOrBlank()) {
       violations += "No $envVarName env var defined!".also { log.error { it } }
-    else
+    } else {
       block(value)
+    }
   }
 
   lateinit var dbHost: String
@@ -83,7 +87,7 @@ fun buildConf(env: Map<String, String>) = runCatching {
     Conf(
       api = Conf.Api(
         appPort!!,
-        cors = env.getOrDefault("CORS", ".*."),
+        cors = env.getOrDefault("CORS", ".*.")
       ),
       environment = environment!!,
       db = Conf.DB(
@@ -97,7 +101,7 @@ fun buildConf(env: Map<String, String>) = runCatching {
       backgroundTask = Conf.BackgroundTask(
         dashboardEnabled!!,
         env.getOrDefault("DASHBOARD_USER", "admin"),
-        env.getOrDefault("DASHBOARD_PASS", "admin"),
+        env.getOrDefault("DASHBOARD_PASS", "admin")
       )
     )
   }

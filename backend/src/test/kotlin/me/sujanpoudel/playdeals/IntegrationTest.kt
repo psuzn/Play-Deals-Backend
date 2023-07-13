@@ -2,6 +2,7 @@ package me.sujanpoudel.playdeals
 
 import io.vertx.core.Vertx
 import io.vertx.ext.web.client.WebClient
+import io.vertx.ext.web.client.WebClientOptions
 import io.vertx.junit5.VertxExtension
 import io.vertx.kotlin.coroutines.await
 import io.vertx.kotlin.coroutines.dispatcher
@@ -28,7 +29,15 @@ abstract class IntegrationTest(private val vertx: Vertx) {
   private lateinit var deploymentId: String
 
   private val log = KotlinLogging.logger {}
-  protected val httpClient: WebClient by lazy { WebClient.create(vertx) }
+  protected val httpClient: WebClient by lazy {
+    WebClient.create(
+      vertx,
+      WebClientOptions()
+        .apply {
+          defaultPort = conf.api.port
+        }
+    )
+  }
 
   private val conf = Conf(
     api = Conf.Api(8888, cors = ".*."),

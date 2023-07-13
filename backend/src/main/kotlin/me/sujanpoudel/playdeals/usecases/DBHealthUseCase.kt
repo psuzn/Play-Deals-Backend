@@ -1,12 +1,16 @@
-package me.sujanpoudel.playdeals.api.health
+package me.sujanpoudel.playdeals.usecases
 
 import io.vertx.kotlin.coroutines.await
 import io.vertx.sqlclient.SqlClient
-import me.sujanpoudel.playdeals.usecases.UseCase
+import org.kodein.di.DI
+import org.kodein.di.instance
 
 class DBHealthUseCase(
-  private val sqlClient: SqlClient
+  di: DI
 ) : UseCase<Unit, Boolean> {
+
+  private val sqlClient by di.instance<SqlClient>()
+
   override suspend fun doExecute(input: Unit): Boolean = runCatching {
     sqlClient.preparedQuery("""SELECT 1""")
       .execute()

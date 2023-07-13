@@ -32,7 +32,7 @@ enum class Value(val root: String, vararg val path: Int) {
   CURRENCY("ds:5", 1, 2, 57, 0, 0, 0, 0, 1, 0, 1),
   GENRE("ds:5", 1, 2, 79, 0, 0, 0),
   SCREENSHOTS_LIST("ds:5", 1, 2, 78, 0),
-  SCREENSHOTS_URL("", 3, 2), ;
+  SCREENSHOTS_URL("", 3, 2) ;
 }
 
 class AppDetailScrapper(
@@ -48,7 +48,6 @@ class AppDetailScrapper(
   override suspend fun handleRequest(jobRequest: Request): Unit = loggingExecutionTime(
     "$SIMPLE_NAME:: handleRequest ${jobRequest.packageName}"
   ) {
-
     val packageName = jobRequest.packageName
 
     val app = loggingExecutionTime("$SIMPLE_NAME:: scrapping app details $packageName") {
@@ -120,13 +119,12 @@ class AppDetailScrapper(
       category = combined.getValue(Value.GENRE) as String,
       offerExpiresIn = combined.getValueOrNull<Int>(Value.OFFER_END_TIME)?.let {
         Instant.ofEpochMilli(it.toLong())
-      },
+      }
     )
   }
 
   @Suppress("UNCHECKED_CAST")
   private fun <T> JsonObject.getValueOrNull(value: Value): T? {
-
     return try {
       return getValue(getJsonArray(value.root), value.path.toTypedArray()) as? T
     } catch (e: Exception) {
@@ -140,10 +138,11 @@ class AppDetailScrapper(
   }
 
   fun getValue(jsonObject: JsonArray, path: Array<Int>): Any {
-    return if (path.size == 1)
+    return if (path.size == 1) {
       jsonObject.getValue(path.first())
-    else
+    } else {
       getValue(jsonObject.getValue(path.first()) as JsonArray, path.drop(1).toTypedArray())
+    }
   }
 
   companion object {

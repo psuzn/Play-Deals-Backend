@@ -20,7 +20,7 @@ fun Row.asAppDeal(): AppDeal {
     rating = get("rating"),
     offerExpiresIn = get("offer_expires_in"),
     createdAt = get("created_at"),
-    updatedAt = get("updated_at"),
+    updatedAt = get("updated_at")
   )
 }
 

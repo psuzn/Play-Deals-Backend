@@ -10,12 +10,14 @@ import io.vertx.pgclient.PgConnectOptions
 import io.vertx.pgclient.PgPool
 import io.vertx.sqlclient.PoolOptions
 import me.sujanpoudel.playdeals.api.ApiVerticle
-import me.sujanpoudel.playdeals.api.health.DBHealthUseCase
 import me.sujanpoudel.playdeals.jobs.AppDetailScrapper
 import me.sujanpoudel.playdeals.jobs.BackgroundJobsVerticle
 import me.sujanpoudel.playdeals.jobs.RedditPostsScrapper
 import me.sujanpoudel.playdeals.repositories.AppDealRepository
 import me.sujanpoudel.playdeals.repositories.KeyValuesRepository
+import me.sujanpoudel.playdeals.usecases.DBHealthUseCase
+import me.sujanpoudel.playdeals.usecases.GetAppDealsUseCase
+import me.sujanpoudel.playdeals.usecases.NewAppDealUseCase
 import org.flywaydb.core.Flyway
 import org.jobrunr.configuration.JobRunr
 import org.jobrunr.configuration.JobRunrConfiguration
@@ -38,7 +40,7 @@ object DIConfigurer {
 
   fun configure(
     vertx: Vertx,
-    conf: Conf,
+    conf: Conf
   ) = DI {
     bindSingleton { conf }
 
@@ -53,16 +55,12 @@ object DIConfigurer {
       MainVerticle(
         apiVerticle = instance(),
         backgroundJobsVerticle = instance(),
-        flywayVerticle = instance(),
+        flywayVerticle = instance()
       )
     }
 
     bindSingleton {
       FlywayVerticle(instance())
-    }
-
-    bindSingleton {
-      DBHealthUseCase(instance())
     }
 
     bindSingleton {
@@ -140,6 +138,10 @@ object DIConfigurer {
 
     bindSingleton { RedditPostsScrapper(di) }
     bindSingleton { AppDetailScrapper(di) }
+
+    bindSingleton { DBHealthUseCase(di) }
+    bindSingleton { GetAppDealsUseCase(di) }
+    bindSingleton { NewAppDealUseCase(di) }
   }
 
   private fun configureObjectMapper(): ObjectMapper {

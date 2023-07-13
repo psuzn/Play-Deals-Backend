@@ -18,7 +18,7 @@ class MainTest {
       "DB_PASSWORD" to "p",
       "APP_PORT" to "123",
       "DB_PORT" to "3333",
-      "DB_NAME" to "db-name",
+      "DB_NAME" to "db-name"
     )
 
     val conf = buildConf(env).unwrap()
@@ -48,7 +48,7 @@ class MainTest {
       "DB_USERNAME" to "u",
       "DB_PASSWORD" to "p",
       "DB_PORT" to "3333",
-      "DB_NAME" to "db-name",
+      "DB_NAME" to "db-name"
     )
 
     val conf = buildConf(env).unwrap()
@@ -57,7 +57,6 @@ class MainTest {
 
   @Test
   fun `Should return all violations`() {
-
     val env = mutableMapOf(
       "APP_PORT" to "BAD_APP_PORT",
       "ENV" to "prod"

@@ -1,7 +1,12 @@
 package me.sujanpoudel.playdeals.usecases
 
+import com.github.michaelbull.result.Result
 import com.github.michaelbull.result.andThen
+import com.github.michaelbull.result.onFailure
+import com.github.michaelbull.result.onSuccess
 import com.github.michaelbull.result.runCatching
+import io.vertx.ext.web.RoutingContext
+import me.sujanpoudel.playdeals.common.handleExceptions
 
 interface Validated {
   suspend fun validate()
@@ -17,32 +22,15 @@ interface UseCase<in Input, out Output> {
   suspend fun doExecute(input: Input): Output
 }
 
-object UseCaseExecutor {
-  suspend fun <Request, Response, Input, Output> execute(
-    useCase: UseCase<Input, Output>,
-    toContext: () -> Request,
-    toInput: (Request) -> Input,
-    toResponse: (Output) -> Response
-  ) = runCatching { toContext.invoke() }
-    .andThen { runCatching { (it as? Validated)?.validate(); it } }
-    .andThen { runCatching { toInput.invoke(it) } }
-    .andThen { runCatching { useCase.execute(it) } }
-    .andThen { runCatching { toResponse(it) } }
-
-  // some params - no response
-  suspend fun <Request, Input> execute(
-    useCase: UseCase<Input, Unit>,
-    toContext: () -> Request,
-    toInput: (Request) -> Input
-  ) = execute(useCase, toContext, toInput) {}
-
-  // no params - no response
-  suspend fun execute(useCase: UseCase<Unit, Unit>) =
-    execute(useCase, { }) { }
-
-  // no params - some response
-  suspend fun <Response, Output> execute(
-    useCase: UseCase<Unit, Output>,
-    toResponse: (Output) -> Response
-  ) = execute(useCase, {}, { }, toResponse)
-}
+suspend fun <Request, Input, Output> RoutingContext.executeUseCase(
+  useCase: UseCase<Input, Output>,
+  toContext: suspend () -> Request,
+  toInput: (Request) -> Input,
+  onError: (Throwable) -> Unit = this::handleExceptions,
+  onSuccess: (Output) -> Unit
+): Result<Output, Throwable> = runCatching { toContext.invoke() }
+  .andThen { runCatching { (it as? Validated)?.validate(); it } }
+  .andThen { runCatching { toInput.invoke(it) } }
+  .andThen { runCatching { useCase.execute(it) } }
+  .onSuccess(onSuccess)
+  .onFailure(onError)

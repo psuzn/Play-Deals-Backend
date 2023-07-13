@@ -12,7 +12,7 @@ import org.kodein.di.instance
 import java.time.Duration
 
 class BackgroundJobsVerticle(
-  override val di: DI,
+  override val di: DI
 ) : CoroutineVerticle(), DIAware {
 
   private val storageProvider by instance<StorageProvider>()

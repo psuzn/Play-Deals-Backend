@@ -41,7 +41,6 @@ class RedditPostsScrapper(
   override suspend fun handleRequest(jobRequest: Request): Unit = loggingExecutionTime(
     "$SIMPLE_NAME:: handleRequest"
   ) {
-
     val lastRedditPost = keyValueRepository.get<String>(LAST_REDDIT_POST)
 
     val posts = loggingExecutionTime(
@@ -81,7 +80,6 @@ class RedditPostsScrapper(
   }
 
   private suspend fun getLatestRedditPosts(after: String?): List<RedditPost> {
-
     val path = "/r/googleplaydeals/new.json?limit=100&before=${after.orEmpty()}"
 
     return webClient.get(path)
