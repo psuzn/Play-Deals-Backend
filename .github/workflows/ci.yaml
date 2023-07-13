@@ -6,9 +6,6 @@ on:
 jobs:
   build:
     runs-on: ubuntu-latest
-    env:
-      IMAGE_REGISTRY: ghcr.io/${{ github.repository_owner }}
-      IMAGE_NAME: ${{ github.event.repository.name }}
 
     steps:
       - uses: actions/checkout@v3
@@ -26,13 +23,42 @@ jobs:
         with:
           arguments: build
 
+      - uses: extractions/setup-just@v1
+
       - name: Build and publish image with jib
         if: ${{ github.ref == 'refs/heads/main' }}
+        run: just build-push-image
+        env:
+          DOCKER_USER: ${{ github.actor }}
+          DOCKER_PASSWORD: ${{ github.token }}
+
+      - uses: azure/setup-helm@v3
+      - uses: azure/setup-kubectl@v3
+        id: install
+        name: Setup kubectl client
+
+      - name: create KUBECONFIG
+        if: ${{ github.ref == 'refs/heads/main' }}
         run: |
-          ./gradlew jib \
-              -Djib.to.image=$IMAGE_REGISTRY/$IMAGE_NAME \
-              -Djib.to.tags=${{ github.sha }} \
-              -Djib.to.auth.username=${{ github.actor }} \
-              -Djib.to.auth.password=${{ github.token }}
+          echo ${{ secrets.KUBE_CONFIG }} | base64 --decode > kube-config;
+          chmod 600 kube-config;
+          echo "KUBECONFIG=$(pwd)/kube-config" >> "$GITHUB_ENV"
+
+      - name: Deploy on k8
+        if: ${{ github.ref == 'refs/heads/main' }}
+        run: |
+          kubectl config current-context;
+          just helm-upgrade;
+        env:
+          DB_HOST: ${{ secrets.DB_HOST }}
+          DB_USERNAME: ${{ secrets.DB_USERNAME }}
+          DB_PASSWORD: ${{ secrets.DB_PASSWORD }}
+          DB_PORT: ${{ secrets.DB_PORT }}
+          DB_NAME: ${{ secrets.DB_NAME }}
+          DASHBOARD: ${{ secrets.DASHBOARD }}
+          DASHBOARD_USER: ${{ secrets.DASHBOARD_USER }}
+          DASHBOARD_PASS: ${{ secrets.DASHBOARD_PASS }}
+
+
 
 
