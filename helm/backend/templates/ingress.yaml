@@ -8,17 +8,28 @@ metadata:
     traefik.ingress.kubernetes.io/router.middlewares: play-deals-backend-redirect-https@kubernetescrd
 spec:
   rules:
-    - host: contabo.sujanpoudel.me
+    - host: api.play-deals.contabo.sujanpoudel.me
       http:
         paths:
-          - backend:
-              service:
-                name: play-deals-backend
-                port:
-                  name: http
-            path: /
+          - path: /
             pathType: Prefix
+            backend:
+              service:
+                name: {{ include "backend.fullname" . }}
+                port:
+                  name: api
+    - host: dashboard.play-deals.contabo.sujanpoudel.me
+      http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: {{ include "backend.fullname" . }}
+                port:
+                  name: dashboard
   tls:
     - hosts:
-        - contabo.sujanpoudel.me
+        - api.play-deals.contabo.sujanpoudel.me
+        - dashboard.play-deals.contabo.sujanpoudel.me
       secretName: k3s-contabo-tls
