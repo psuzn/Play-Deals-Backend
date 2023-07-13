@@ -14,7 +14,7 @@ data class AppDetail(
   val category: String,
   val downloads: String,
   val rating: String,
-  val offerExpiresIn: Instant?,
+  val offerExpiresIn: Instant?
 )
 
 fun AppDetail.asNewAppDeal() = NewAppDeal(

@@ -35,7 +35,6 @@ fun <T> jsonResponse(
   "data" to data
 )
 
-
 const val UNKNOWN_ERROR_MESSAGE = "Something went wrong"
 
 fun RoutingContext.handleExceptions(exception: Throwable) {

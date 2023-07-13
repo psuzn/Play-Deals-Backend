@@ -40,7 +40,7 @@ object DIConfigurer {
 
   fun configure(
     vertx: Vertx,
-    conf: Conf,
+    conf: Conf
   ) = DI {
     bindSingleton { conf }
 
@@ -55,7 +55,7 @@ object DIConfigurer {
       MainVerticle(
         apiVerticle = instance(),
         backgroundJobsVerticle = instance(),
-        flywayVerticle = instance(),
+        flywayVerticle = instance()
       )
     }
 

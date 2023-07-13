@@ -7,7 +7,7 @@ import org.jlleitschuh.gradle.ktlint.KtlintPlugin
 
 plugins {
   kotlin("jvm") version Versions.KOTLIN
-  id("org.jlleitschuh.gradle.ktlint") version "11.1.0"
+  id("org.jlleitschuh.gradle.ktlint") version "11.5.0"
 }
 
 buildscript {

@@ -30,9 +30,13 @@ abstract class IntegrationTest(private val vertx: Vertx) {
 
   private val log = KotlinLogging.logger {}
   protected val httpClient: WebClient by lazy {
-    WebClient.create(vertx, WebClientOptions().apply {
-      defaultPort = conf.api.port
-    })
+    WebClient.create(
+      vertx,
+      WebClientOptions()
+        .apply {
+          defaultPort = conf.api.port
+        }
+    )
   }
 
   private val conf = Conf(

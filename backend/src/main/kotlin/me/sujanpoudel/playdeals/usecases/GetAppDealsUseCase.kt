@@ -16,6 +16,4 @@ class GetAppDealsUseCase(
   override suspend fun doExecute(input: Input): List<AppDeal> {
     return appDealsRepository.getAll(input.skip, input.take)
   }
-
 }
-

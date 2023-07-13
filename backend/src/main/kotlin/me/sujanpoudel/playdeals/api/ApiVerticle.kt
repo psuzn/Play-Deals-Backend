@@ -15,7 +15,6 @@ class ApiVerticle(
 ) : CoroutineVerticle() {
 
   override suspend fun start() {
-
     val config = di.instance<Conf>()
     val router = Router.router(vertx)
 

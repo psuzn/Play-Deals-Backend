@@ -16,6 +16,4 @@ class NewAppDealUseCase(
     val id = UUID.nameUUIDFromBytes(input.toByteArray())
     jobRequestScheduler.enqueue(id, AppDetailScrapper.Request(input))
   }
-
 }
-

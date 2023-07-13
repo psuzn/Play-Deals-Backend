@@ -57,7 +57,6 @@ class GetAppDealsApiTest(vertx: Vertx) : IntegrationTest(vertx) {
 
   @Test
   fun `should return app deals`() = runTest {
-
     val repository = di.get<AppDealRepository>()
 
     val app0 = repository.upsert(newAppDeal)
@@ -72,12 +71,10 @@ class GetAppDealsApiTest(vertx: Vertx) : IntegrationTest(vertx) {
     response.statusCode() shouldBe 200
     deals.data!!.size shouldBe 2
     deals.data.shouldContainAll(listOf(app0, app1))
-
   }
 
   @Test
   fun `should correctly handle skip parameter`() = runTest {
-
     val repository = di.get<AppDealRepository>()
 
     repository.upsert(newAppDeal)
@@ -102,12 +99,10 @@ class GetAppDealsApiTest(vertx: Vertx) : IntegrationTest(vertx) {
         response.statusCode() shouldBe 200
         deals.data!!.size shouldBe 1
       }
-
   }
 
   @Test
   fun `should correctly handle take parameter`() = runTest {
-
     val repository = di.get<AppDealRepository>()
 
     repository.upsert(newAppDeal)
@@ -132,6 +127,5 @@ class GetAppDealsApiTest(vertx: Vertx) : IntegrationTest(vertx) {
         response.statusCode() shouldBe 200
         deals.data!!.size shouldBe 1
       }
-
   }
 }

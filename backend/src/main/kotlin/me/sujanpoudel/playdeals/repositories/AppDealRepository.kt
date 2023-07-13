@@ -12,7 +12,6 @@ class AppDealRepository(
   private val sqlClient: SqlClient
 ) {
   suspend fun getAll(skip: Int, take: Int): List<AppDeal> {
-
     return sqlClient.preparedQuery(
       """
       SELECT * FROM "app_deal" ORDER BY created_at DESC OFFSET $1 LIMIT $2

@@ -16,7 +16,6 @@ fun appDealsApi(
   di: DirectDI,
   vertx: Vertx
 ): Router = Router.router(vertx).apply {
-
   get()
     .coHandler { ctx ->
       ctx.executeUseCase(
@@ -34,7 +33,7 @@ fun appDealsApi(
       ctx.executeUseCase(
         useCase = di.instance<NewAppDealUseCase>(),
         toContext = { NewAppDealContext(ctx.request().body().await().toJsonObject()) },
-        toInput = { it.packageName },
+        toInput = { it.packageName }
       ) {
         ctx.json(jsonResponse<Any>("App added for queue"))
       }

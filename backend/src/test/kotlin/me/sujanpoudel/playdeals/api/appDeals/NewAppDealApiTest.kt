@@ -39,7 +39,6 @@ class NewAppDealApiTest(vertx: Vertx) : IntegrationTest(vertx) {
 
   @Test
   fun `should enqueue a app detail scrap request on success`() = runTest {
-
     val storageProvider = di.get<StorageProvider>()
 
     val packageName = "com.example.app"
@@ -54,5 +53,4 @@ class NewAppDealApiTest(vertx: Vertx) : IntegrationTest(vertx) {
 
     response.statusCode() shouldBe 200
   }
-
 }

@@ -27,7 +27,7 @@ suspend fun <Request, Input, Output> RoutingContext.executeUseCase(
   toContext: suspend () -> Request,
   toInput: (Request) -> Input,
   onError: (Throwable) -> Unit = this::handleExceptions,
-  onSuccess: (Output) -> Unit,
+  onSuccess: (Output) -> Unit
 ): Result<Output, Throwable> = runCatching { toContext.invoke() }
   .andThen { runCatching { (it as? Validated)?.validate(); it } }
   .andThen { runCatching { toInput.invoke(it) } }

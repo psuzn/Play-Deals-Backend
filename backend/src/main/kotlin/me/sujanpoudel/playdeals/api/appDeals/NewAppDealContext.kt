@@ -14,7 +14,6 @@ class NewAppDealContext(
   val packageName: String by lazy { request.getString(packageNameField) }
 
   override suspend fun validate() {
-
     val packageName: String? = request.getString(packageNameField)
     when {
       packageName == null -> throw ClientErrorException("$packageNameField is required")

@@ -18,7 +18,7 @@ data class Conf(
     val name: String,
     val username: String,
     val password: String,
-    val poolSize: Int,
+    val poolSize: Int
   )
 
   data class BackgroundTask(

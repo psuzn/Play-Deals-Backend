@@ -37,7 +37,6 @@ class ApiDealRepositoryTest(vertx: Vertx) : IntegrationTest(vertx) {
 
   @Test
   fun `should create new app deal in db`() = runTest {
-
     val appDeal = repository.upsert(newAppDeal)
 
     val appDealFromDb = sqlClient.preparedQuery(""" SELECT * from "app_deal" where id=$1""")
@@ -51,7 +50,6 @@ class ApiDealRepositoryTest(vertx: Vertx) : IntegrationTest(vertx) {
 
   @Test
   fun `should perform update if item with id already exists`() = runTest {
-
     repository.upsert(newAppDeal)
 
     repository.upsert(newAppDeal.copy(name = "Updated Name"))
@@ -67,7 +65,6 @@ class ApiDealRepositoryTest(vertx: Vertx) : IntegrationTest(vertx) {
 
   @Test
   fun `should delete app deal in db`() = runTest {
-
     repository.upsert(newAppDeal)
     repository.delete(newAppDeal.id)
 
@@ -79,7 +76,6 @@ class ApiDealRepositoryTest(vertx: Vertx) : IntegrationTest(vertx) {
 
   @Test
   fun `should be able to get all app deals from db`() = runTest {
-
     val deal0 = repository.upsert(newAppDeal)
     val deal1 = repository.upsert(newAppDeal.copy(id = "id_1"))
 
@@ -90,7 +86,6 @@ class ApiDealRepositoryTest(vertx: Vertx) : IntegrationTest(vertx) {
 
   @Test
   fun `should be able to get all app deals from db in order`() = runTest {
-
     val deal0 = repository.upsert(newAppDeal)
     val deal1 = repository.upsert(newAppDeal.copy(id = "id_1"))
 

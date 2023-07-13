@@ -31,10 +31,11 @@ fun healthApi(
 
   readinessHandler.register("postgres") { promise ->
     CoroutineScope(Dispatchers.IO).launch(vertx.dispatcher()) {
-      if (dbHealthChecker.execute(Unit))
+      if (dbHealthChecker.execute(Unit)) {
         promise.complete(Status.OK())
-      else
+      } else {
         promise.complete(Status.KO())
+      }
     }
   }
 
