@@ -60,7 +60,7 @@ helm-create-deployer:
 # deletes the deployer service account
 helm-delete-deployer:
     echo "Deleting deployer service account to $(kubectl config current-context)"
-    helm uninstall play-deals-backend-deployer  --namespace {{namespace}}
+    helm uninstall play-deals-backend-deployer --namespace {{namespace}}
 
 # gets the deployer kubeconfig
 deployer-cubeconfig:
