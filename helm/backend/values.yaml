@@ -40,7 +40,8 @@ securityContext: {}
 
 service:
   type: ClusterIP
-  port: 80
+  apiPort: 80
+  dashboardPort: 8000
 
 ingress:
   enabled: false
