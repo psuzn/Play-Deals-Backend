@@ -21,6 +21,10 @@ class ApiVerticle(
     router.route().handler(CorsHandler.create().addRelativeOrigin(config.api.cors))
     router.route("/health/*").subRouter(healthApi(di, vertx))
 
+    router.route("/").handler {
+      it.response().setStatusCode(200).send("OK")
+    }
+
     vertx.createHttpServer()
       .requestHandler(router)
       .listen(config.api.port)

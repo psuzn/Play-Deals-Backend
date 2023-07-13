@@ -8,17 +8,17 @@ metadata:
     traefik.ingress.kubernetes.io/router.middlewares: play-deals-backend-redirect-https@kubernetescrd
 spec:
   rules:
-    - host: api.bag.gransoftware.de
+    - host: contabo.sujanpoudel.me
       http:
         paths:
           - backend:
               service:
-                name: bag-backend
+                name: play-deals-backend
                 port:
                   name: http
             path: /
             pathType: Prefix
   tls:
     - hosts:
-        - api.bag.gransoftware.de
+        - contabo.sujanpoudel.me
       secretName: k3s-contabo-tls
