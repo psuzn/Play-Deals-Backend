@@ -8,7 +8,7 @@ serviceAccountName:= "play-deals-backend-deployer"
 tag := "$(git rev-parse --short HEAD)"
 imageRepo := "ghcr.io/psuzn/play-deals-backend"
 
-dev-run-backend:
+dev-run:
   ./gradlew backend:run
 
 build-push-image imageTag=tag:
