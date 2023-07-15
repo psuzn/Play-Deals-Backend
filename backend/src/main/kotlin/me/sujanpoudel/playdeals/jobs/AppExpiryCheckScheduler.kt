@@ -37,8 +37,8 @@ class AppExpiryCheckScheduler(
   }
 }
 
-fun AppExpiryCheckScheduler.Request.asRecurringRequest() = RecurringJobBuilder.aRecurringJob()
+fun AppExpiryCheckScheduler.Request.asRecurringRequest(): RecurringJobBuilder = RecurringJobBuilder.aRecurringJob()
   .withJobRequest(this)
-  .withName("AppExpiryCheckScheduler")
+  .withName("App Expiry Checker")
   .withId(AppExpiryCheckScheduler.JOB_ID.toString())
   .withDuration(Duration.ofHours(6))
