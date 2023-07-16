@@ -1,5 +1,6 @@
 package me.sujanpoudel.playdeals
 
+import com.fasterxml.jackson.databind.ObjectMapper
 import io.vertx.core.Vertx
 import io.vertx.ext.web.client.WebClient
 import io.vertx.ext.web.client.WebClientOptions
@@ -60,6 +61,7 @@ abstract class IntegrationTest(private val vertx: Vertx) {
   var di = DIConfigurer.configure(vertx, conf)
 
   protected fun runTest(block: suspend () -> Unit): Unit = runBlocking(vertx.dispatcher()) {
+    di.direct.instance<ObjectMapper>()
     block()
   }
 

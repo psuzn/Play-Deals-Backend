@@ -13,7 +13,7 @@ import me.sujanpoudel.playdeals.domain.entities.AppDeal
 import me.sujanpoudel.playdeals.get
 import me.sujanpoudel.playdeals.repositories.AppDealRepository
 import org.junit.jupiter.api.Test
-import java.time.Instant
+import java.time.OffsetDateTime
 
 private val newAppDeal = NewAppDeal(
   id = "id",
@@ -27,7 +27,7 @@ private val newAppDeal = NewAppDeal(
   category = "unknown",
   downloads = "12+",
   rating = "12",
-  offerExpiresIn = Instant.now()
+  offerExpiresIn = OffsetDateTime.now()
 )
 
 class GetAppDealsApiTest(vertx: Vertx) : IntegrationTest(vertx) {
