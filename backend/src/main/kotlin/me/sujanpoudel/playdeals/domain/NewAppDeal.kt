@@ -1,7 +1,6 @@
 package me.sujanpoudel.playdeals.domain
 
-import java.time.Instant
-import java.time.ZoneOffset
+import java.time.OffsetDateTime
 
 data class NewAppDeal(
   val id: String,
@@ -15,7 +14,7 @@ data class NewAppDeal(
   val category: String,
   val downloads: String,
   val rating: String,
-  val offerExpiresIn: Instant
+  val offerExpiresIn: OffsetDateTime
 )
 
 val NewAppDeal.insertValues
@@ -31,5 +30,5 @@ val NewAppDeal.insertValues
     category,
     downloads,
     rating,
-    offerExpiresIn.atOffset(ZoneOffset.UTC).toLocalDateTime()
+    offerExpiresIn
   )

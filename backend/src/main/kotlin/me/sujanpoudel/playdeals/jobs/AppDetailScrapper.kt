@@ -19,6 +19,8 @@ import org.kodein.di.DI
 import org.kodein.di.DIAware
 import org.kodein.di.instance
 import java.time.Instant
+import java.time.OffsetDateTime
+import java.time.ZoneOffset
 import java.util.regex.Pattern
 
 enum class Value(val root: String, vararg val path: Int) {
@@ -32,7 +34,7 @@ enum class Value(val root: String, vararg val path: Int) {
   CURRENCY("ds:5", 1, 2, 57, 0, 0, 0, 0, 1, 0, 1),
   GENRE("ds:5", 1, 2, 79, 0, 0, 0),
   SCREENSHOTS_LIST("ds:5", 1, 2, 78, 0),
-  SCREENSHOTS_URL("", 3, 2) ;
+  SCREENSHOTS_URL("", 3, 2);
 }
 
 class AppDetailScrapper(
@@ -118,7 +120,7 @@ class AppDetailScrapper(
       storeUrl = packageName,
       category = combined.getValue(Value.GENRE) as String,
       offerExpiresIn = combined.getValueOrNull<Int>(Value.OFFER_END_TIME)?.let {
-        Instant.ofEpochMilli(it.toLong())
+        OffsetDateTime.ofInstant(Instant.ofEpochMilli(it.toLong()), ZoneOffset.UTC)
       }
     )
   }

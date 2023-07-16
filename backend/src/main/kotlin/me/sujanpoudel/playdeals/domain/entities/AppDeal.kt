@@ -1,6 +1,6 @@
 package me.sujanpoudel.playdeals.domain.entities
 
-import java.time.Instant
+import java.time.OffsetDateTime
 
 data class AppDeal(
   val id: String,
@@ -14,7 +14,7 @@ data class AppDeal(
   val category: String,
   val downloads: String,
   val rating: String,
-  val offerExpiresIn: Instant,
-  val createdAt: Instant,
-  val updatedAt: Instant
+  val offerExpiresIn: OffsetDateTime,
+  val createdAt: OffsetDateTime,
+  val updatedAt: OffsetDateTime
 )
