@@ -23,7 +23,7 @@ class AppExpiryCheckScheduler(
     "$SIMPLE_NAME:: handleRequest"
   ) {
     val apps = repository.getPotentiallyExpiredDeals().stream()
-      .map { AppDetailScrapper.Request(it.name) }
+      .map { AppDetailScrapper.Request(it.id) }
 
     requestScheduler.enqueue(apps)
   }
