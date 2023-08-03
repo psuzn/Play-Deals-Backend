@@ -3,6 +3,7 @@ package me.sujanpoudel.playdeals.jobs
 import io.vertx.core.json.JsonObject
 import io.vertx.ext.web.client.WebClient
 import io.vertx.ext.web.client.WebClientOptions
+import io.vertx.kotlin.core.json.jsonArrayOf
 import io.vertx.kotlin.coroutines.await
 import me.sujanpoudel.playdeals.common.SIMPLE_NAME
 import me.sujanpoudel.playdeals.common.loggingExecutionTime
@@ -85,7 +86,14 @@ class RedditPostsScrapper(
     return webClient.get(path)
       .send()
       .map {
-        it.bodyAsJsonObject().getJsonObject("data").getJsonArray("children")
+        if (it.statusCode() == 200) {
+          it.bodyAsJsonObject()
+            .getJsonObject("data")
+            .getJsonArray("children")
+        } else {
+          log.error("Error while getting reddit post : ${it.bodyAsString()}")
+          jsonArrayOf()
+        }
       }
       .map { posts ->
         posts.map { post ->
