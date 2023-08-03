@@ -36,6 +36,10 @@ allprojects {
       jvmTarget = "17"
     }
   }
+
+  task("preCommitHook") {
+    dependsOn(tasks.ktlintCheck)
+  }
 }
 
 tasks.withType<Test> {
@@ -47,11 +51,6 @@ tasks.withType<Test> {
       TestLogEvent.FAILED
     )
   }
-}
-
-task("preCommitHook") {
-  dependsOn(tasks.ktlintFormat)
-  dependsOn(tasks.ktlintCheck)
 }
 
 task("installPreCommitHook") {

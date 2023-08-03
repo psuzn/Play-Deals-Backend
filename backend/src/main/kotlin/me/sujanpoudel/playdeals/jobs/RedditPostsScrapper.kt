@@ -86,9 +86,11 @@ class RedditPostsScrapper(
     return webClient.get(path)
       .send()
       .map {
-        if (it.statusCode() == 200)
-          it.bodyAsJsonObject().getJsonObject("data").getJsonArray("children")
-        else {
+        if (it.statusCode() == 200) {
+          it.bodyAsJsonObject()
+            .getJsonObject("data")
+            .getJsonArray("children")
+        } else {
           log.error("Error while getting reddit post : ${it.bodyAsString()}")
           jsonArrayOf()
         }
