@@ -117,7 +117,7 @@ class AppDetailScrapper(
       currentPrice = currentPrice,
       rating = combined.getValue<Float>(Value.RATINGS).toString(),
       downloads = combined.getValue(Value.INSTALLS),
-      storeUrl = packageName,
+      storeUrl = "https://play.google.com/store/apps/details?id=$packageName",
       category = combined.getValue(Value.GENRE) as String,
       offerExpiresIn = combined.getValueOrNull<Int>(Value.OFFER_END_TIME)?.let {
         OffsetDateTime.ofInstant(Instant.ofEpochSecond(it.toLong()), ZoneOffset.UTC)
