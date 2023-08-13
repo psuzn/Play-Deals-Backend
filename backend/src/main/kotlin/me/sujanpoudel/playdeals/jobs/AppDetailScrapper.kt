@@ -120,7 +120,7 @@ class AppDetailScrapper(
       storeUrl = packageName,
       category = combined.getValue(Value.GENRE) as String,
       offerExpiresIn = combined.getValueOrNull<Int>(Value.OFFER_END_TIME)?.let {
-        OffsetDateTime.ofInstant(Instant.ofEpochMilli(it.toLong()), ZoneOffset.UTC)
+        OffsetDateTime.ofInstant(Instant.ofEpochSecond(it.toLong()), ZoneOffset.UTC)
       }
     )
   }
