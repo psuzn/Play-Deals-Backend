@@ -65,6 +65,7 @@ class RedditPostsScrapper(
     }
 
     posts.firstOrNull()?.let {
+      log.info("$SIMPLE_NAME:: Last reddit post id is ${it.content}")
       keyValueRepository.set(LAST_REDDIT_POST, it.id)
     }
 
