@@ -94,7 +94,7 @@ class RedditPostsScrapper(
             id = data.getString("name"),
             content = data.getString("selftext"),
             createdAt = data.getDouble("created").toLong().let {
-              OffsetDateTime.ofInstant(Instant.ofEpochMilli(it), ZoneOffset.UTC)
+              OffsetDateTime.ofInstant(Instant.ofEpochSecond(it), ZoneOffset.UTC)
             }
           )
         }
