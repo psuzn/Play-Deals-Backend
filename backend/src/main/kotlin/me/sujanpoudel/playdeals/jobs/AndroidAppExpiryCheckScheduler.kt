@@ -12,9 +12,9 @@ import org.kodein.di.instance
 import java.time.Duration
 import java.util.UUID
 
-class AppExpiryCheckScheduler(
+class AndroidAppExpiryCheckScheduler(
   override val di: DI
-) : CoJobRequestHandler<AppExpiryCheckScheduler.Request>(), DIAware {
+) : CoJobRequestHandler<AndroidAppExpiryCheckScheduler.Request>(), DIAware {
 
   private val repository by instance<AppDealRepository>()
   private val requestScheduler by instance<JobRequestScheduler>()
@@ -29,7 +29,7 @@ class AppExpiryCheckScheduler(
   }
 
   class Request : JobRequest {
-    override fun getJobRequestHandler() = AppExpiryCheckScheduler::class.java
+    override fun getJobRequestHandler() = AndroidAppExpiryCheckScheduler::class.java
   }
 
   companion object {
@@ -37,8 +37,8 @@ class AppExpiryCheckScheduler(
   }
 }
 
-fun AppExpiryCheckScheduler.Request.asRecurringRequest(): RecurringJobBuilder = RecurringJobBuilder.aRecurringJob()
+fun AndroidAppExpiryCheckScheduler.Request.asRecurringRequest(): RecurringJobBuilder = RecurringJobBuilder.aRecurringJob()
   .withJobRequest(this)
   .withName("App Expiry Checker")
-  .withId(AppExpiryCheckScheduler.JOB_ID.toString())
+  .withId(AndroidAppExpiryCheckScheduler.JOB_ID.toString())
   .withDuration(Duration.ofHours(6))

@@ -11,8 +11,8 @@ import io.vertx.pgclient.PgConnectOptions
 import io.vertx.pgclient.PgPool
 import io.vertx.sqlclient.PoolOptions
 import me.sujanpoudel.playdeals.api.ApiVerticle
+import me.sujanpoudel.playdeals.jobs.AndroidAppExpiryCheckScheduler
 import me.sujanpoudel.playdeals.jobs.AppDetailScrapper
-import me.sujanpoudel.playdeals.jobs.AppExpiryCheckScheduler
 import me.sujanpoudel.playdeals.jobs.BackgroundJobsVerticle
 import me.sujanpoudel.playdeals.jobs.RedditPostsScrapper
 import me.sujanpoudel.playdeals.repositories.AppDealRepository
@@ -140,7 +140,7 @@ object DIConfigurer {
 
     bindSingleton { RedditPostsScrapper(di) }
     bindSingleton { AppDetailScrapper(di) }
-    bindSingleton { AppExpiryCheckScheduler(di) }
+    bindSingleton { AndroidAppExpiryCheckScheduler(di) }
 
     bindSingleton { DBHealthUseCase(di) }
     bindSingleton { GetAppDealsUseCase(di) }

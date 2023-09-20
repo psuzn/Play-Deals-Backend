@@ -9,7 +9,6 @@ import org.kodein.di.DI
 import org.kodein.di.DIAware
 import org.kodein.di.direct
 import org.kodein.di.instance
-import java.time.Duration
 
 class BackgroundJobsVerticle(
   override val di: DI
@@ -24,15 +23,12 @@ class BackgroundJobsVerticle(
   }
 
   private fun setupRecurringJobs() {
-    storageProvider.deletePermanently(RedditPostsScrapper.JOB_ID)
-    storageProvider.deletePermanently(AppExpiryCheckScheduler.JOB_ID)
-
-    jobRequestScheduler.create(
-      RedditPostsScrapper.Request().asJob(Duration.ofMinutes(1))
+    jobRequestScheduler.createRecurrently(
+      RedditPostsScrapper.Request().asRecurringRequest()
     )
 
     jobRequestScheduler.createRecurrently(
-      AppExpiryCheckScheduler.Request().asRecurringRequest()
+      AndroidAppExpiryCheckScheduler.Request().asRecurringRequest()
     )
   }
 
