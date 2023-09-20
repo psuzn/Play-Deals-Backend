@@ -10,18 +10,21 @@ import me.sujanpoudel.playdeals.common.loggingExecutionTime
 import me.sujanpoudel.playdeals.log
 import me.sujanpoudel.playdeals.repositories.KeyValuesRepository
 import org.jobrunr.jobs.lambdas.JobRequest
-import org.jobrunr.scheduling.JobBuilder
 import org.jobrunr.scheduling.JobRequestScheduler
-import org.jobrunr.storage.StorageProvider
+import org.jobrunr.scheduling.RecurringJobBuilder
 import org.kodein.di.DI
 import org.kodein.di.DIAware
 import org.kodein.di.instance
 import java.time.Duration
+import java.time.Instant
+import java.time.OffsetDateTime
+import java.time.ZoneOffset
 import java.util.UUID
 
 data class RedditPost(
   val id: String,
-  val content: String
+  val content: String,
+  val createdAt: OffsetDateTime
 )
 
 class RedditPostsScrapper(
@@ -37,17 +40,16 @@ class RedditPostsScrapper(
     )
   }
   private val jobRequestScheduler by instance<JobRequestScheduler>()
-  private val storageProvider by instance<StorageProvider>()
 
   override suspend fun handleRequest(jobRequest: Request): Unit = loggingExecutionTime(
     "$SIMPLE_NAME:: handleRequest"
   ) {
-    val lastRedditPost = keyValueRepository.get<String>(LAST_REDDIT_POST)
+    val lastPostTime = keyValueRepository.get<OffsetDateTime>(LAST_REDDIT_POST_TIME)
 
     val posts = loggingExecutionTime(
-      "$SIMPLE_NAME:: Fetched reddit post, last post id was : '$lastRedditPost'"
+      "$SIMPLE_NAME:: Fetched reddit post, last created post was at : '$lastPostTime'"
     ) {
-      getLatestRedditPosts(lastRedditPost)
+      getLatestRedditPosts(lastPostTime ?: OffsetDateTime.MIN)
     }
 
     val appLinks = posts.flatMap { post ->
@@ -65,24 +67,13 @@ class RedditPostsScrapper(
     }
 
     posts.firstOrNull()?.let {
-      log.info("$SIMPLE_NAME:: Last reddit post id is ${it.id}")
-      keyValueRepository.set(LAST_REDDIT_POST, it.id)
-    }
-
-    rescheduleNextTick()
-  }
-
-  private fun rescheduleNextTick() {
-    verticle.vertx.setTimer(1000) {
-      storageProvider.deletePermanently(JOB_ID)
-      jobRequestScheduler.create(
-        Request().asJob(Duration.ofHours(1))
-      )
+      log.info("$SIMPLE_NAME:: Last reddit post was at ${it.createdAt} with id ${it.id}")
+      keyValueRepository.set(LAST_REDDIT_POST_TIME, it.createdAt)
     }
   }
 
-  private suspend fun getLatestRedditPosts(after: String?): List<RedditPost> {
-    val path = "/r/googleplaydeals/new.json?limit=100&before=${after.orEmpty()}"
+  private suspend fun getLatestRedditPosts(lastPostTime: OffsetDateTime): List<RedditPost> {
+    val path = "/r/googleplaydeals/new.json?limit=100"
 
     return webClient.get(path)
       .send()
@@ -101,11 +92,17 @@ class RedditPostsScrapper(
           val data = (post as JsonObject).getJsonObject("data")
           RedditPost(
             id = data.getString("name"),
-            content = data.getString("selftext")
+            content = data.getString("selftext"),
+            createdAt = data.getDouble("created").toLong().let {
+              OffsetDateTime.ofInstant(Instant.ofEpochMilli(it), ZoneOffset.UTC)
+            }
           )
         }
       }
       .await()
+      .filter {
+        it.createdAt > lastPostTime
+      }
   }
 
   class Request : JobRequest {
@@ -113,19 +110,17 @@ class RedditPostsScrapper(
   }
 
   companion object {
-    const val LAST_REDDIT_POST = "LAST_REDDIT_POST"
+    const val LAST_REDDIT_POST_TIME = "LAST_REDDIT_POST_TIME"
 
     val JOB_ID: UUID = UUID.nameUUIDFromBytes("Reddit Posts".toByteArray())
     val PLAY_CONSOLE_REGX = Regex("https://play\\.google\\.com/store/apps/details\\?id=([(a-zA-Z-0-9.]+)")
   }
 }
 
-fun RedditPostsScrapper.Request.asJob(
-  duration: Duration = Duration.ofHours(1)
-): JobBuilder = JobBuilder.aJob()
+fun RedditPostsScrapper.Request.asRecurringRequest(): RecurringJobBuilder = RecurringJobBuilder.aRecurringJob()
   .withJobRequest(this)
   .withAmountOfRetries(2)
-  .scheduleIn(duration)
   .withLabels("Reddit")
   .withName("Reddit Post Scrap")
-  .withId(RedditPostsScrapper.JOB_ID)
+  .withId(RedditPostsScrapper.JOB_ID.toString())
+  .withDuration(Duration.ofHours(1))
