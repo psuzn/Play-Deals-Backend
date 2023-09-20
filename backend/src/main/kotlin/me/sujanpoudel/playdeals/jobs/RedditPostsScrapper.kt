@@ -44,7 +44,7 @@ class RedditPostsScrapper(
   override suspend fun handleRequest(jobRequest: Request): Unit = loggingExecutionTime(
     "$SIMPLE_NAME:: handleRequest"
   ) {
-    val lastPostTime = keyValueRepository.get<OffsetDateTime>(LAST_REDDIT_POST_TIME)
+    val lastPostTime = keyValueRepository.get<String>(LAST_REDDIT_POST_TIME).let(OffsetDateTime::parse)
 
     val posts = loggingExecutionTime(
       "$SIMPLE_NAME:: Fetched reddit post, last created post was at : '$lastPostTime'"
@@ -68,7 +68,7 @@ class RedditPostsScrapper(
 
     posts.firstOrNull()?.let {
       log.info("$SIMPLE_NAME:: Last reddit post was at ${it.createdAt} with id ${it.id}")
-      keyValueRepository.set(LAST_REDDIT_POST_TIME, it.createdAt)
+      keyValueRepository.set(LAST_REDDIT_POST_TIME, it.createdAt.toString())
     }
   }
 
