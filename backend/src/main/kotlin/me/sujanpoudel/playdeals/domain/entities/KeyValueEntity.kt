@@ -2,7 +2,7 @@ package me.sujanpoudel.playdeals.domain.entities
 
 import java.io.Serializable
 
-data class KeyValue<T : Serializable>(val key: String, val value: T)
+data class KeyValueEntity<T : Serializable>(val key: String, val value: T)
 
-val KeyValue<*>.insertValues
+val KeyValueEntity<*>.insertValues
   get() = arrayOf(key, value)

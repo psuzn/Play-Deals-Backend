@@ -2,7 +2,7 @@ package me.sujanpoudel.playdeals.jobs
 
 import me.sujanpoudel.playdeals.common.SIMPLE_NAME
 import me.sujanpoudel.playdeals.common.loggingExecutionTime
-import me.sujanpoudel.playdeals.repositories.AppDealRepository
+import me.sujanpoudel.playdeals.repositories.DealRepository
 import org.jobrunr.jobs.lambdas.JobRequest
 import org.jobrunr.scheduling.JobRequestScheduler
 import org.jobrunr.scheduling.RecurringJobBuilder
@@ -16,7 +16,7 @@ class AndroidAppExpiryCheckScheduler(
   override val di: DI
 ) : CoJobRequestHandler<AndroidAppExpiryCheckScheduler.Request>(), DIAware {
 
-  private val repository by instance<AppDealRepository>()
+  private val repository by instance<DealRepository>()
   private val requestScheduler by instance<JobRequestScheduler>()
 
   override suspend fun handleRequest(jobRequest: Request): Unit = loggingExecutionTime(

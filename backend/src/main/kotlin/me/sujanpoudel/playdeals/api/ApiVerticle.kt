@@ -5,7 +5,7 @@ import io.vertx.ext.web.handler.CorsHandler
 import io.vertx.kotlin.coroutines.CoroutineVerticle
 import io.vertx.kotlin.coroutines.await
 import me.sujanpoudel.playdeals.Conf
-import me.sujanpoudel.playdeals.api.appDeals.appDealsApi
+import me.sujanpoudel.playdeals.api.deals.appDealsApi
 import me.sujanpoudel.playdeals.log
 import org.kodein.di.DirectDI
 import org.kodein.di.instance

@@ -1,10 +1,10 @@
-package me.sujanpoudel.playdeals.api.appDeals
+package me.sujanpoudel.playdeals.api.deals
 
 import io.vertx.core.MultiMap
 import me.sujanpoudel.playdeals.exceptions.ClientErrorException
 import me.sujanpoudel.playdeals.usecases.Validated
 
-class GetAppDealsContext(
+class GetDealsContext(
   private val param: MultiMap
 ) : Validated {
 

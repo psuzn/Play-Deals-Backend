@@ -3,7 +3,7 @@ package me.sujanpoudel.playdeals.repositories
 import io.vertx.kotlin.coroutines.await
 import io.vertx.sqlclient.SqlClient
 import me.sujanpoudel.playdeals.common.exec
-import me.sujanpoudel.playdeals.domain.entities.KeyValue
+import me.sujanpoudel.playdeals.domain.entities.KeyValueEntity
 import me.sujanpoudel.playdeals.domain.entities.asKeyValue
 import java.io.Serializable
 
@@ -11,7 +11,7 @@ class KeyValuesRepository(
   val sqlClient: SqlClient
 ) {
 
-  suspend inline fun <reified T : Serializable> set(key: String, value: T): KeyValue<T> {
+  suspend inline fun <reified T : Serializable> set(key: String, value: T): KeyValueEntity<T> {
     return sqlClient.preparedQuery(
       """
       INSERT INTO "key_value_store" VALUES ($1,$2)

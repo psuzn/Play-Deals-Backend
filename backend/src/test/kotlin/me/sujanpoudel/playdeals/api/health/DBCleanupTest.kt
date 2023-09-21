@@ -18,10 +18,10 @@ class DBCleanupTest(vertx: Vertx) : IntegrationTest(vertx) {
       .query(CLEAN_UP_DB_QUERY).execute()
       .onFailure { it.printStackTrace() }
 
-    val totalUsers = sqlClient.preparedQuery("""select count(*) from app_deal """)
+    val totalDeals = sqlClient.preparedQuery("""select count(*) from deal """)
       .execute()
       .await().first().getInteger(0)
 
-    totalUsers shouldBe 0
+    totalDeals shouldBe 0
   }
 }

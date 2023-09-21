@@ -15,11 +15,11 @@ import me.sujanpoudel.playdeals.jobs.AndroidAppExpiryCheckScheduler
 import me.sujanpoudel.playdeals.jobs.AppDetailScrapper
 import me.sujanpoudel.playdeals.jobs.BackgroundJobsVerticle
 import me.sujanpoudel.playdeals.jobs.RedditPostsScrapper
-import me.sujanpoudel.playdeals.repositories.AppDealRepository
+import me.sujanpoudel.playdeals.repositories.DealRepository
 import me.sujanpoudel.playdeals.repositories.KeyValuesRepository
 import me.sujanpoudel.playdeals.usecases.DBHealthUseCase
-import me.sujanpoudel.playdeals.usecases.GetAppDealsUseCase
-import me.sujanpoudel.playdeals.usecases.NewAppDealUseCase
+import me.sujanpoudel.playdeals.usecases.GetDealsUseCase
+import me.sujanpoudel.playdeals.usecases.NewDealUseCase
 import org.flywaydb.core.Flyway
 import org.jobrunr.configuration.JobRunr
 import org.jobrunr.configuration.JobRunrConfiguration
@@ -135,7 +135,7 @@ object DIConfigurer {
       instance<JobRunrConfiguration.JobRunrConfigurationResult>().jobRequestScheduler
     }
 
-    bindSingleton { AppDealRepository(sqlClient = instance()) }
+    bindSingleton { DealRepository(sqlClient = instance()) }
     bindSingleton { KeyValuesRepository(sqlClient = instance()) }
 
     bindSingleton { RedditPostsScrapper(di) }
@@ -143,8 +143,8 @@ object DIConfigurer {
     bindSingleton { AndroidAppExpiryCheckScheduler(di) }
 
     bindSingleton { DBHealthUseCase(di) }
-    bindSingleton { GetAppDealsUseCase(di) }
-    bindSingleton { NewAppDealUseCase(di) }
+    bindSingleton { GetDealsUseCase(di) }
+    bindSingleton { NewDealUseCase(di) }
   }
 
   private fun configureObjectMapper(): ObjectMapper {
