@@ -1,8 +1,9 @@
 package me.sujanpoudel.playdeals.domain
 
+import me.sujanpoudel.playdeals.domain.entities.DealType
 import java.time.OffsetDateTime
 
-data class NewAppDeal(
+data class NewDeal(
   val id: String,
   val name: String,
   val icon: String,
@@ -14,10 +15,12 @@ data class NewAppDeal(
   val category: String,
   val downloads: String,
   val rating: String,
-  val offerExpiresIn: OffsetDateTime
+  val offerExpiresIn: OffsetDateTime,
+  val type: DealType,
+  val source: String
 )
 
-val NewAppDeal.insertValues
+val NewDeal.insertValues
   get() = arrayOf(
     id,
     name,
@@ -30,5 +33,7 @@ val NewAppDeal.insertValues
     category,
     downloads,
     rating,
-    offerExpiresIn
+    offerExpiresIn,
+    type.toString(),
+    source
   )

@@ -6,7 +6,7 @@ import org.kodein.di.DI
 import org.kodein.di.instance
 import java.util.UUID
 
-class NewAppDealUseCase(
+class NewDealUseCase(
   di: DI
 ) : UseCase<String, Unit> {
 

@@ -62,7 +62,12 @@ abstract class IntegrationTest(private val vertx: Vertx) {
 
   protected fun runTest(block: suspend () -> Unit): Unit = runBlocking(vertx.dispatcher()) {
     di.direct.instance<ObjectMapper>()
-    block()
+    try {
+      block()
+    } catch (e: Exception) {
+      e.printStackTrace()
+      throw e
+    }
   }
 
   private fun deployVerticle(): String = runBlocking(vertx.dispatcher()) {
@@ -95,7 +100,7 @@ abstract class IntegrationTest(private val vertx: Vertx) {
 
     @JvmStatic
     protected val CLEAN_UP_DB_QUERY = """
-      DELETE FROM "app_deal" WHERE True;
+      DELETE FROM "deal" WHERE True;
       DELETE FROM "key_value_store" WHERE True;
     """.trimIndent()
 

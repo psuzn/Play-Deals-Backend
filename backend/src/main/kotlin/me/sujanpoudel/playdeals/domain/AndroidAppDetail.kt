@@ -1,8 +1,9 @@
 package me.sujanpoudel.playdeals.domain
 
+import me.sujanpoudel.playdeals.domain.entities.DealType
 import java.time.OffsetDateTime
 
-data class AppDetail(
+data class AndroidAppDetail(
   val id: String,
   val name: String,
   val icon: String,
@@ -14,10 +15,11 @@ data class AppDetail(
   val category: String,
   val downloads: String,
   val rating: String,
-  val offerExpiresIn: OffsetDateTime?
+  val offerExpiresIn: OffsetDateTime?,
+  val source: String
 )
 
-fun AppDetail.asNewAppDeal() = NewAppDeal(
+fun AndroidAppDetail.asNewDeal() = NewDeal(
   id = id,
   name = name,
   icon = icon,
@@ -29,5 +31,7 @@ fun AppDetail.asNewAppDeal() = NewAppDeal(
   category = category,
   downloads = downloads,
   rating = rating,
-  offerExpiresIn = offerExpiresIn!!
+  offerExpiresIn = offerExpiresIn!!,
+  type = DealType.ANDROID_APP,
+  source = source
 )

@@ -1,3 +1,3 @@
-rootProject.name = "play deals"
+rootProject.name = "deals"
 
 include("backend")

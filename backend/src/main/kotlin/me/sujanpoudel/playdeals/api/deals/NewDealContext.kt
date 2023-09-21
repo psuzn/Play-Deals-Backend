@@ -1,11 +1,11 @@
-package me.sujanpoudel.playdeals.api.appDeals
+package me.sujanpoudel.playdeals.api.deals
 
 import io.vertx.core.json.JsonObject
 import me.sujanpoudel.playdeals.RegxPatterns
 import me.sujanpoudel.playdeals.exceptions.ClientErrorException
 import me.sujanpoudel.playdeals.usecases.Validated
 
-class NewAppDealContext(
+class NewDealContext(
   private val request: JsonObject
 ) : Validated {
 

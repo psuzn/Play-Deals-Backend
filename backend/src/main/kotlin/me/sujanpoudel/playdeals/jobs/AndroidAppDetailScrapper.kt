@@ -8,12 +8,13 @@ import io.vertx.ext.web.client.WebClient
 import io.vertx.ext.web.client.WebClientOptions
 import io.vertx.kotlin.core.json.jsonObjectOf
 import io.vertx.kotlin.coroutines.await
+import me.sujanpoudel.playdeals.Constants
 import me.sujanpoudel.playdeals.common.SIMPLE_NAME
 import me.sujanpoudel.playdeals.common.loggingExecutionTime
-import me.sujanpoudel.playdeals.domain.AppDetail
-import me.sujanpoudel.playdeals.domain.asNewAppDeal
+import me.sujanpoudel.playdeals.domain.AndroidAppDetail
+import me.sujanpoudel.playdeals.domain.asNewDeal
 import me.sujanpoudel.playdeals.log
-import me.sujanpoudel.playdeals.repositories.AppDealRepository
+import me.sujanpoudel.playdeals.repositories.DealRepository
 import org.jobrunr.jobs.lambdas.JobRequest
 import org.kodein.di.DI
 import org.kodein.di.DIAware
@@ -42,7 +43,7 @@ class AppDetailScrapper(
 ) : CoJobRequestHandler<AppDetailScrapper.Request>(), DIAware {
 
   private val jobsVerticle by instance<BackgroundJobsVerticle>()
-  private val repository by instance<AppDealRepository>()
+  private val repository by instance<DealRepository>()
   private val webClient by lazy {
     WebClient.create(jobsVerticle.vertx, WebClientOptions().setDefaultHost("play.google.com"))
   }
@@ -69,12 +70,12 @@ class AppDetailScrapper(
 
       (app.currentPrice ?: 0f) < app.normalPrice -> {
         log.info("Found deal for $packageName(${app.name}) ${app.currentPrice} ${app.currency}(${app.normalPrice} ${app.currency})")
-        repository.upsert(app.asNewAppDeal())
+        repository.upsert(app.asNewDeal())
       }
     }
   }
 
-  private suspend fun getAppDetail(packageName: String): AppDetail {
+  private suspend fun getAppDetail(packageName: String): AndroidAppDetail {
     val response = webClient.get("/store/apps/details?id=$packageName&hl=en&gl=us")
       .send()
       .await()
@@ -105,7 +106,7 @@ class AppDetailScrapper(
     val currentPrice = combined.getValue<Int>(Value.CURRENT_PRICE) / PRICE_MULTIPLIER
     val normalPrice = combined.getValueOrNull<Int>(Value.NORMAL_PRICE)?.div(PRICE_MULTIPLIER) ?: currentPrice
 
-    return AppDetail(
+    return AndroidAppDetail(
       id = packageName,
       name = combined.getValue(Value.TITLE),
       icon = combined.getValue(Value.ICON),
@@ -121,7 +122,8 @@ class AppDetailScrapper(
       category = combined.getValue(Value.GENRE) as String,
       offerExpiresIn = combined.getValueOrNull<Int>(Value.OFFER_END_TIME)?.let {
         OffsetDateTime.ofInstant(Instant.ofEpochSecond(it.toLong()), ZoneOffset.UTC)
-      }
+      },
+      source = Constants.DealSources.APP_DEAL_SUBREDDIT
     )
   }
 

@@ -1,4 +1,4 @@
-package me.sujanpoudel.playdeals.api.appDeals
+package me.sujanpoudel.playdeals.api.deals
 
 import io.kotest.matchers.shouldBe
 import io.vertx.core.Vertx
@@ -11,7 +11,7 @@ import org.jobrunr.storage.StorageProvider
 import org.junit.jupiter.api.Test
 import java.util.UUID
 
-class NewAppDealApiTest(vertx: Vertx) : IntegrationTest(vertx) {
+class NewDealEntityApiTest(vertx: Vertx) : IntegrationTest(vertx) {
 
   @Test
   fun `should send error response if packageName is null`() = runTest {

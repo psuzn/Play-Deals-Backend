@@ -7,9 +7,11 @@ import io.kotest.matchers.shouldBe
 import io.vertx.core.Vertx
 import io.vertx.kotlin.coroutines.await
 import io.vertx.sqlclient.SqlClient
+import me.sujanpoudel.playdeals.Constants
 import me.sujanpoudel.playdeals.IntegrationTest
 import me.sujanpoudel.playdeals.common.exec
-import me.sujanpoudel.playdeals.domain.NewAppDeal
+import me.sujanpoudel.playdeals.domain.NewDeal
+import me.sujanpoudel.playdeals.domain.entities.DealType
 import me.sujanpoudel.playdeals.domain.entities.asAppDeal
 import me.sujanpoudel.playdeals.get
 import org.junit.jupiter.api.Test
@@ -17,10 +19,10 @@ import java.time.OffsetDateTime
 
 class ApiDealRepositoryTest(vertx: Vertx) : IntegrationTest(vertx) {
 
-  private val repository by lazy { di.get<AppDealRepository>() }
+  private val repository by lazy { di.get<DealRepository>() }
   private val sqlClient by lazy { di.get<SqlClient>() }
 
-  private val newAppDeal = NewAppDeal(
+  private val newDeal = NewDeal(
     id = "id",
     name = "name",
     icon = "icon",
@@ -32,15 +34,17 @@ class ApiDealRepositoryTest(vertx: Vertx) : IntegrationTest(vertx) {
     category = "unknown",
     downloads = "12+",
     rating = "12",
-    offerExpiresIn = OffsetDateTime.now()
+    offerExpiresIn = OffsetDateTime.now(),
+    type = DealType.ANDROID_APP,
+    source = Constants.DealSources.APP_DEAL_SUBREDDIT
   )
 
   @Test
   fun `should create new app deal in db`() = runTest {
-    val appDeal = repository.upsert(newAppDeal)
+    val appDeal = repository.upsert(newDeal)
 
-    val appDealFromDb = sqlClient.preparedQuery(""" SELECT * from "app_deal" where id=$1""")
-      .exec(newAppDeal.id)
+    val appDealFromDb = sqlClient.preparedQuery(""" SELECT * from "deal" where id=$1""")
+      .exec(newDeal.id)
       .await()
       .first()
       .asAppDeal()
@@ -50,12 +54,12 @@ class ApiDealRepositoryTest(vertx: Vertx) : IntegrationTest(vertx) {
 
   @Test
   fun `should perform update if item with id already exists`() = runTest {
-    repository.upsert(newAppDeal)
+    repository.upsert(newDeal)
 
-    repository.upsert(newAppDeal.copy(name = "Updated Name"))
+    repository.upsert(newDeal.copy(name = "Updated Name"))
 
-    val appDealFromDb = sqlClient.preparedQuery(""" SELECT * from "app_deal" where id=$1""")
-      .exec(newAppDeal.id)
+    val appDealFromDb = sqlClient.preparedQuery(""" SELECT * from "deal" where id=$1""")
+      .exec(newDeal.id)
       .await()
       .first()
       .asAppDeal()
@@ -65,19 +69,19 @@ class ApiDealRepositoryTest(vertx: Vertx) : IntegrationTest(vertx) {
 
   @Test
   fun `should delete app deal in db`() = runTest {
-    repository.upsert(newAppDeal)
-    repository.delete(newAppDeal.id)
+    repository.upsert(newDeal)
+    repository.delete(newDeal.id)
 
-    sqlClient.preparedQuery("""SELECT * from "app_deal" where id=$1""")
-      .exec(newAppDeal.id)
+    sqlClient.preparedQuery("""SELECT * from "deal" where id=$1""")
+      .exec(newDeal.id)
       .await()
       .rowCount() shouldBe 0
   }
 
   @Test
   fun `should be able to get all app deals from db`() = runTest {
-    val deal0 = repository.upsert(newAppDeal)
-    val deal1 = repository.upsert(newAppDeal.copy(id = "id_1"))
+    val deal0 = repository.upsert(newDeal)
+    val deal1 = repository.upsert(newDeal.copy(id = "id_1"))
 
     val appDeal = repository.getAll(0, 100)
 
@@ -86,8 +90,8 @@ class ApiDealRepositoryTest(vertx: Vertx) : IntegrationTest(vertx) {
 
   @Test
   fun `should be able to get all app deals from db in order`() = runTest {
-    val deal0 = repository.upsert(newAppDeal)
-    val deal1 = repository.upsert(newAppDeal.copy(id = "id_1"))
+    val deal0 = repository.upsert(newDeal)
+    val deal1 = repository.upsert(newDeal.copy(id = "id_1"))
 
     val appDeal = repository.getAll(0, 100)
 

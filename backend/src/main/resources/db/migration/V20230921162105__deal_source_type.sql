@@ -1,0 +1,13 @@
+ALTER TABLE app_deal RENAME TO deal;
+
+ALTER TABLE deal RENAME COLUMN store_url TO url;
+
+CREATE TYPE DealType AS ENUM ('ANDROID_APP', 'IOS_APP', 'DESKTOP_APP','OTHER');
+
+ALTER TABLE deal
+    ADD COLUMN type DealType NOT NUll DEFAULT 'ANDROID_APP',
+    ADD COLUMN source text NOT NUll DEFAULT 'r/googleplaydeals';
+
+ALTER TABLE deal
+    ALTER COLUMN type DROP DEFAULT,
+    ALTER COLUMN source DROP DEFAULT;
