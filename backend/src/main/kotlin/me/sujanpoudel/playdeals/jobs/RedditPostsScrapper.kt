@@ -52,16 +52,15 @@ class RedditPostsScrapper(
       getLatestRedditPosts(lastPostTime ?: OffsetDateTime.MIN)
     }
 
-    val appLinks = posts.flatMap { post ->
-      PLAY_CONSOLE_REGX.matchEntire(post.content)?.groups.orEmpty()
-        .drop(1)
-        .filterNotNull()
-        .map { it.value }
+    val appIds = posts.flatMap { post ->
+      PLAY_CONSOLE_REGX.findAll(post.content).toList().mapNotNull {
+        it.groupValues.lastOrNull()
+      }
     }.distinct()
 
-    log.info("$SIMPLE_NAME:: got ${posts.size} new posts (${appLinks.size} Links)")
+    log.info("$SIMPLE_NAME:: got ${posts.size} new posts (${appIds.size} Links)")
 
-    appLinks.forEach { packageName ->
+    appIds.forEach { packageName ->
       val id = UUID.nameUUIDFromBytes(packageName.toByteArray())
       jobRequestScheduler.enqueue(id, AppDetailScrapper.Request(packageName))
     }
@@ -92,7 +91,7 @@ class RedditPostsScrapper(
           val data = (post as JsonObject).getJsonObject("data")
           RedditPost(
             id = data.getString("name"),
-            content = data.getString("selftext"),
+            content = data.getString("selftext").trim().ifBlank { data.getString("url") },
             createdAt = data.getDouble("created").toLong().let {
               OffsetDateTime.ofInstant(Instant.ofEpochSecond(it), ZoneOffset.UTC)
             }
@@ -113,7 +112,7 @@ class RedditPostsScrapper(
     const val LAST_REDDIT_POST_TIME = "LAST_REDDIT_POST_TIME"
 
     val JOB_ID: UUID = UUID.nameUUIDFromBytes("Reddit Posts".toByteArray())
-    val PLAY_CONSOLE_REGX = Regex("https://play\\.google\\.com/store/apps/details\\?id=([(a-zA-Z-0-9.]+)")
+    val PLAY_CONSOLE_REGX = Regex("https://play\\.google\\.com/store/apps/details\\?id=([(a-z_A-Z-0-9.]+)")
   }
 }
 
