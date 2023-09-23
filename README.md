@@ -1,12 +1,23 @@
-# Play Deals [![play-deals-backend 1.0 CI](https://github.com/psuzn/play-deals-backend/actions/workflows/ci.yaml/badge.svg)](https://github.com/psuzn/play-deals-backend/actions/workflows/ci.yaml)
+# Play Deals
+[![Static Badge](https://img.shields.io/badge/Android-black?logo=android&logoColor=white&color=%234889f5)](https://play.google.com/store/apps/details?id=me.sujanpoudel.playdeals) &nbsp;
+[![Static Badge](https://img.shields.io/badge/IOS-grey?logo=apple)](https://github.com/psuzn/app-deals/releases/latest) &nbsp;&nbsp;
+[![Static Badge](https://img.shields.io/badge/macOS-black?logo=apple)](https://github.com/psuzn/app-deals/releases/latest) &nbsp;
+[![Static Badge](https://img.shields.io/badge/Windows-green?logo=windows&color=blue)](https://github.com/psuzn/app-deals/releases/latest) &nbsp;
+[![Static Badge](https://img.shields.io/badge/Linux-white?logo=linux&logoColor=white&color=grey)](https://github.com/psuzn/app-deals/releases/latest) &nbsp;
+
+![Static Badge](https://img.shields.io/badge/License-GPL--v3-brightgreen)
+[![play-deals-backend 1.0 CI](https://github.com/psuzn/play-deals-backend/actions/workflows/ci.yaml/badge.svg)](https://github.com/psuzn/play-deals-backend/actions/workflows/ci.yaml)
 
 ![Feature](./media/feature-graphic.jpeg)
 
-<p>
-  <a href="https://play.google.com/store/apps/details?id=me.sujanpoudel.playdeals">
-    <img src="https://cdn.rawgit.com/steverichey/google-play-badge-svg/master/img/en_get.svg" width="30%" alt="Get it on Google play">
-  </a>
-</p>
+
+| <a href="https://play.google.com/store/apps/details?id=me.sujanpoudel.playdeals">     <img src="media/badge-get-on-google-play.png" width="200" alt="Get it on Google play">   </a> | <a href="https://github.com/psuzn/app-deals/releases/latest">     <img src="media/badge-download-apk.png" width="160" alt="Download Apk">   </a> |
+|-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|:------------------------------------------------------------------------------------------------------------------------------------------------:|
+
+Play deals is a simple app that aggregates the paid apps that have ongoing deals and discounts, aka you can get the
+paid apps free or with discount.
+
+# Play Deals
 
 Play deals is a simple app to aggregate the paid apps that have ongoing deals and discounts.
 
