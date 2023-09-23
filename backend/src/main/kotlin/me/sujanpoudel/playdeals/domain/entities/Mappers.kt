@@ -4,7 +4,7 @@ import io.vertx.core.json.Json
 import io.vertx.sqlclient.Row
 import me.sujanpoudel.playdeals.common.asEnum
 import me.sujanpoudel.playdeals.common.get
-import java.io.Serializable
+import kotlin.reflect.KClass
 
 fun Row.asAppDeal(): DealEntity {
   return DealEntity(
@@ -28,11 +28,11 @@ fun Row.asAppDeal(): DealEntity {
   )
 }
 
-inline fun <reified T : Serializable> Row.asKeyValue(): KeyValueEntity<T> {
+fun <T : Any> Row.asKeyValue(clazz: KClass<out T>): KeyValueEntity<T> {
   return KeyValueEntity(
     get("key"),
     getString("value").let {
-      Json.CODEC.fromValue(it, T::class.java)
+      Json.CODEC.fromValue(it, clazz.java)
     }
   )
 }

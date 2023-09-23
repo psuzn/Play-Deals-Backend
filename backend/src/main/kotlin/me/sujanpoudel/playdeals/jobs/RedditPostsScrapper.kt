@@ -9,6 +9,7 @@ import me.sujanpoudel.playdeals.common.SIMPLE_NAME
 import me.sujanpoudel.playdeals.common.loggingExecutionTime
 import me.sujanpoudel.playdeals.log
 import me.sujanpoudel.playdeals.repositories.KeyValuesRepository
+import me.sujanpoudel.playdeals.repositories.get
 import org.jobrunr.jobs.lambdas.JobRequest
 import org.jobrunr.scheduling.JobRequestScheduler
 import org.jobrunr.scheduling.RecurringJobBuilder

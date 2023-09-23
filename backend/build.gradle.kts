@@ -76,6 +76,7 @@ dependencies {
 
   testImplementation("org.junit.jupiter:junit-jupiter:${Versions.JUNIT_JUPITER}")
   testImplementation("io.kotest:kotest-assertions-core:${Versions.KO_TEST}")
+  testImplementation("io.mockk:mockk:${Versions.MOCKK}")
   with("org.testcontainers") {
     testImplementation("$this:testcontainers:${Versions.TEST_CONTAINERS}")
     testImplementation("$this:junit-jupiter:${Versions.TEST_CONTAINERS}")

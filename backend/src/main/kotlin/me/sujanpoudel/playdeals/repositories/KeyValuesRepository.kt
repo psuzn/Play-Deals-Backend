@@ -1,45 +1,18 @@
 package me.sujanpoudel.playdeals.repositories
 
-import io.vertx.kotlin.coroutines.await
-import io.vertx.sqlclient.SqlClient
-import me.sujanpoudel.playdeals.common.exec
 import me.sujanpoudel.playdeals.domain.entities.KeyValueEntity
-import me.sujanpoudel.playdeals.domain.entities.asKeyValue
-import java.io.Serializable
+import kotlin.reflect.KClass
 
-class KeyValuesRepository(
-  val sqlClient: SqlClient
-) {
+interface KeyValuesRepository {
+  suspend fun <T : Any> set(key: String, value: T, clazz: KClass<out T> = value::class): KeyValueEntity<T>
 
-  suspend inline fun <reified T : Serializable> set(key: String, value: T): KeyValueEntity<T> {
-    return sqlClient.preparedQuery(
-      """
-      INSERT INTO "key_value_store" VALUES ($1,$2)
-          ON CONFLICT(key) DO UPDATE SET value = $2
-      RETURNING *
-      """.trimIndent()
-    ).exec(key, value)
-      .await()
-      .first()
-      .asKeyValue<T>()
-  }
+  suspend fun <T : Any> get(key: String, clazz: KClass<T>): T?
 
-  suspend inline fun <reified T : Serializable> get(key: String): T? {
-    return sqlClient.preparedQuery(
-      """
-      SELECT * FROM "key_value_store" WHERE key = $1
-      """.trimIndent()
-    ).exec(key)
-      .await()
-      .firstOrNull()?.asKeyValue<T>()?.value
-  }
-
-  suspend inline fun <reified T : Serializable> delete(key: String) {
-    sqlClient.preparedQuery(
-      """
-     DELETE FROM "key_value_store" WHERE key = $1
-      """.trimIndent()
-    ).exec(key)
-      .await()
-  }
+  suspend fun delete(key: String)
 }
+
+suspend inline fun <reified T : Any> KeyValuesRepository.set(key: String, value: T): KeyValueEntity<T> {
+  return set(key, value, T::class)
+}
+
+suspend inline fun <reified T : Any> KeyValuesRepository.get(key: String) = get(key, T::class)

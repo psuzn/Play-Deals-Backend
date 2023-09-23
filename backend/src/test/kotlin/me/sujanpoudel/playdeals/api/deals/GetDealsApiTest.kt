@@ -14,6 +14,7 @@ import me.sujanpoudel.playdeals.domain.entities.DealEntity
 import me.sujanpoudel.playdeals.domain.entities.DealType
 import me.sujanpoudel.playdeals.get
 import me.sujanpoudel.playdeals.repositories.DealRepository
+import me.sujanpoudel.playdeals.repositories.persistent.PersistentDealRepository
 import org.junit.jupiter.api.Test
 import java.time.OffsetDateTime
 
@@ -107,7 +108,7 @@ class GetDealsApiTest(vertx: Vertx) : IntegrationTest(vertx) {
 
   @Test
   fun `should correctly handle take parameter`() = runTest {
-    val repository = di.get<DealRepository>()
+    val repository = di.get<PersistentDealRepository>()
 
     repository.upsert(newDeal)
     repository.upsert(newDeal.copy(id = "id1"))
