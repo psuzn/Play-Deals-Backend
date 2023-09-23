@@ -17,6 +17,9 @@ import me.sujanpoudel.playdeals.jobs.BackgroundJobsVerticle
 import me.sujanpoudel.playdeals.jobs.RedditPostsScrapper
 import me.sujanpoudel.playdeals.repositories.DealRepository
 import me.sujanpoudel.playdeals.repositories.KeyValuesRepository
+import me.sujanpoudel.playdeals.repositories.caching.CachingDealRepository
+import me.sujanpoudel.playdeals.repositories.persistent.PersistentDealRepository
+import me.sujanpoudel.playdeals.repositories.persistent.PersistentKeyValuesRepository
 import me.sujanpoudel.playdeals.usecases.DBHealthUseCase
 import me.sujanpoudel.playdeals.usecases.GetDealsUseCase
 import me.sujanpoudel.playdeals.usecases.NewDealUseCase
@@ -135,8 +138,9 @@ object DIConfigurer {
       instance<JobRunrConfiguration.JobRunrConfigurationResult>().jobRequestScheduler
     }
 
-    bindSingleton { DealRepository(sqlClient = instance()) }
-    bindSingleton { KeyValuesRepository(sqlClient = instance()) }
+    bindSingleton<PersistentDealRepository> { PersistentDealRepository(sqlClient = instance()) }
+    bindSingleton<DealRepository> { CachingDealRepository(instance<PersistentDealRepository>()) }
+    bindSingleton<KeyValuesRepository> { PersistentKeyValuesRepository(sqlClient = instance()) }
 
     bindSingleton { RedditPostsScrapper(di) }
     bindSingleton { AppDetailScrapper(di) }

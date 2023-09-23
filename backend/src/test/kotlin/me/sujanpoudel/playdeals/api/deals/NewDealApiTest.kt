@@ -11,7 +11,7 @@ import org.jobrunr.storage.StorageProvider
 import org.junit.jupiter.api.Test
 import java.util.UUID
 
-class NewDealEntityApiTest(vertx: Vertx) : IntegrationTest(vertx) {
+class NewDealApiTest(vertx: Vertx) : IntegrationTest(vertx) {
 
   @Test
   fun `should send error response if packageName is null`() = runTest {

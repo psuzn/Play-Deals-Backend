@@ -14,12 +14,13 @@ import me.sujanpoudel.playdeals.domain.NewDeal
 import me.sujanpoudel.playdeals.domain.entities.DealType
 import me.sujanpoudel.playdeals.domain.entities.asAppDeal
 import me.sujanpoudel.playdeals.get
+import me.sujanpoudel.playdeals.repositories.persistent.PersistentDealRepository
 import org.junit.jupiter.api.Test
 import java.time.OffsetDateTime
 
-class ApiDealRepositoryTest(vertx: Vertx) : IntegrationTest(vertx) {
+class PersistentDealRepositoryTest(vertx: Vertx) : IntegrationTest(vertx) {
 
-  private val repository by lazy { di.get<DealRepository>() }
+  private val repository by lazy { di.get<PersistentDealRepository>() }
   private val sqlClient by lazy { di.get<SqlClient>() }
 
   private val newDeal = NewDeal(
