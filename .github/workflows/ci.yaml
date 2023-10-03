@@ -4,7 +4,7 @@ on:
   workflow_dispatch:
 
 jobs:
-  lint:
+  checks:
     runs-on: ubuntu-latest
 
     steps:
