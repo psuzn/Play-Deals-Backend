@@ -4,6 +4,9 @@ import com.fasterxml.jackson.databind.ObjectMapper
 import com.fasterxml.jackson.databind.SerializationFeature
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule
 import com.fasterxml.jackson.module.kotlin.registerKotlinModule
+import com.google.auth.oauth2.GoogleCredentials
+import com.google.firebase.FirebaseApp
+import com.google.firebase.FirebaseOptions
 import io.vertx.core.Vertx
 import io.vertx.core.eventbus.DeliveryOptions
 import io.vertx.core.json.jackson.DatabindCodec
@@ -149,6 +152,16 @@ object DIConfigurer {
     bindSingleton { DBHealthUseCase(di) }
     bindSingleton { GetDealsUseCase(di) }
     bindSingleton { NewDealUseCase(di) }
+
+    bindSingleton<FirebaseOptions> {
+      FirebaseOptions.builder()
+        .setCredentials(GoogleCredentials.fromStream(conf.firebaseAuthCredential.byteInputStream()))
+        .build()
+    }
+
+    bindSingleton<FirebaseApp> {
+      FirebaseApp.initializeApp(instance<FirebaseOptions>())
+    }
   }
 
   private fun configureObjectMapper(): ObjectMapper {

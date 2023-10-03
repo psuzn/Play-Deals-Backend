@@ -55,7 +55,8 @@ abstract class IntegrationTest(private val vertx: Vertx) {
       false,
       "admin",
       "admin"
-    )
+    ),
+    firebaseAuthCredential = ""
   )
 
   var di = DIConfigurer.configure(vertx, conf)
