@@ -25,7 +25,6 @@ jobs:
       - uses: extractions/setup-just@v1
 
       - name: Build and publish image with jib
-        if: ${{ github.ref == 'refs/heads/main' }}
         run: just build-push-image
         env:
           DOCKER_USER: ${{ github.actor }}
@@ -46,14 +45,12 @@ jobs:
         name: Setup kubectl client
 
       - name: create KUBECONFIG
-        if: ${{ github.ref == 'refs/heads/main' }}
         run: |
           echo ${{ secrets.KUBE_CONFIG }} | base64 --decode > kube-config;
           chmod 600 kube-config;
           echo "KUBECONFIG=$(pwd)/kube-config" >> "$GITHUB_ENV"
 
       - name: Deploy on k8
-        if: ${{ github.ref == 'refs/heads/main' }}
         run: |
           kubectl config current-context;
           just helm-upgrade;
