@@ -7,7 +7,8 @@ import io.vertx.kotlin.core.json.jsonArrayOf
 import io.vertx.kotlin.coroutines.await
 import me.sujanpoudel.playdeals.common.SIMPLE_NAME
 import me.sujanpoudel.playdeals.common.loggingExecutionTime
-import me.sujanpoudel.playdeals.log
+import me.sujanpoudel.playdeals.infoNotify
+import me.sujanpoudel.playdeals.logger
 import me.sujanpoudel.playdeals.repositories.KeyValuesRepository
 import org.jobrunr.jobs.lambdas.JobRequest
 import org.jobrunr.scheduling.JobRequestScheduler
@@ -58,7 +59,7 @@ class RedditPostsScrapper(
       }
     }.distinct()
 
-    log.info("$SIMPLE_NAME:: got ${posts.size} new posts (${appIds.size} Links)")
+    logger.infoNotify("$SIMPLE_NAME:: got ${posts.size} new posts (${appIds.size} Links)")
 
     appIds.forEach { packageName ->
       val id = UUID.nameUUIDFromBytes(packageName.toByteArray())
@@ -66,7 +67,7 @@ class RedditPostsScrapper(
     }
 
     posts.firstOrNull()?.let {
-      log.info("$SIMPLE_NAME:: Last reddit post was at ${it.createdAt} with id ${it.id}")
+      logger.info("$SIMPLE_NAME:: Last reddit post was at ${it.createdAt} with id ${it.id}")
       keyValueRepository.set(LAST_REDDIT_POST_TIME, it.createdAt.toString())
     }
   }
@@ -82,7 +83,7 @@ class RedditPostsScrapper(
             .getJsonObject("data")
             .getJsonArray("children")
         } else {
-          log.error("Error while getting reddit post : ${it.bodyAsString()}")
+          logger.infoNotify("Error while getting reddit post : ${it.bodyAsString()}")
           jsonArrayOf()
         }
       }
@@ -104,22 +105,23 @@ class RedditPostsScrapper(
       }
   }
 
-  class Request : JobRequest {
+  class Request private constructor() : JobRequest {
     override fun getJobRequestHandler() = RedditPostsScrapper::class.java
+
+    companion object {
+      private val JOB_ID: UUID = UUID.nameUUIDFromBytes("Reddit Posts".toByteArray())
+      operator fun invoke(): RecurringJobBuilder = RecurringJobBuilder.aRecurringJob()
+        .withJobRequest(Request())
+        .withAmountOfRetries(2)
+        .withLabels("Reddit")
+        .withName("Reddit Post Scrap")
+        .withId(JOB_ID.toString())
+        .withDuration(Duration.ofHours(1))
+    }
   }
 
   companion object {
-    const val LAST_REDDIT_POST_TIME = "LAST_REDDIT_POST_TIME"
-
-    val JOB_ID: UUID = UUID.nameUUIDFromBytes("Reddit Posts".toByteArray())
-    val PLAY_CONSOLE_REGX = Regex("https://play\\.google\\.com/store/apps/details\\?id=([(a-z_A-Z-0-9.]+)")
+    private const val LAST_REDDIT_POST_TIME = "LAST_REDDIT_POST_TIME"
+    private val PLAY_CONSOLE_REGX = Regex("https://play\\.google\\.com/store/apps/details\\?id=([(a-z_A-Z-0-9.]+)")
   }
 }
-
-fun RedditPostsScrapper.Request.asRecurringRequest(): RecurringJobBuilder = RecurringJobBuilder.aRecurringJob()
-  .withJobRequest(this)
-  .withAmountOfRetries(2)
-  .withLabels("Reddit")
-  .withName("Reddit Post Scrap")
-  .withId(RedditPostsScrapper.JOB_ID.toString())
-  .withDuration(Duration.ofHours(1))

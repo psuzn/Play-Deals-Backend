@@ -59,7 +59,7 @@ abstract class IntegrationTest(private val vertx: Vertx) {
     firebaseAuthCredential = ""
   )
 
-  var di = DIConfigurer.configure(vertx, conf)
+  var di = configureDI(vertx, conf)
 
   protected fun runTest(block: suspend () -> Unit): Unit = runBlocking(vertx.dispatcher()) {
     di.direct.instance<ObjectMapper>()

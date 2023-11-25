@@ -2,7 +2,7 @@ package me.sujanpoudel.playdeals.repositories.caching
 
 import me.sujanpoudel.playdeals.domain.NewDeal
 import me.sujanpoudel.playdeals.domain.entities.DealEntity
-import me.sujanpoudel.playdeals.log
+import me.sujanpoudel.playdeals.logger
 import me.sujanpoudel.playdeals.repositories.DealRepository
 
 class CachingDealRepository(
@@ -22,7 +22,7 @@ class CachingDealRepository(
       cache.putAll(delegate.getAll(0, Int.MAX_VALUE).map { it.id to it })
       cacheInitialized = true
     } catch (e: Exception) {
-      log.error(e) {
+      logger.error(e) {
         "Error while preloading cache"
       }
     }

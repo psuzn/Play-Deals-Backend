@@ -31,40 +31,41 @@ jobs:
           DOCKER_USER: ${{ github.actor }}
           DOCKER_PASSWORD: ${{ github.token }}
 
-deploy_on_k8:
-  runs-on: ubuntu-latest
-  needs: build_image
-  steps:
-    - uses: actions/checkout@v3
+  deploy_on_k8:
+    runs-on: ubuntu-latest
+    needs: build_image
+    steps:
+      - uses: actions/checkout@v3
 
-    - uses: extractions/setup-just@v1
+      - uses: extractions/setup-just@v1
 
-    - uses: azure/setup-helm@v3
+      - uses: azure/setup-helm@v3
 
-    - uses: azure/setup-kubectl@v3
-      id: install
-      name: Setup kubectl client
+      - uses: azure/setup-kubectl@v3
+        id: install
+        name: Setup kubectl client
 
-    - name: create KUBECONFIG
-      if: ${{ github.ref == 'refs/heads/main' }}
-      run: |
-        echo ${{ secrets.KUBE_CONFIG }} | base64 --decode > kube-config;
-        chmod 600 kube-config;
-        echo "KUBECONFIG=$(pwd)/kube-config" >> "$GITHUB_ENV"
+      - name: create KUBECONFIG
+        if: ${{ github.ref == 'refs/heads/main' }}
+        run: |
+          echo ${{ secrets.KUBE_CONFIG }} | base64 --decode > kube-config;
+          chmod 600 kube-config;
+          echo "KUBECONFIG=$(pwd)/kube-config" >> "$GITHUB_ENV"
 
-    - name: Deploy on k8
-      if: ${{ github.ref == 'refs/heads/main' }}
-      run: |
-        kubectl config current-context;
-        just helm-upgrade;
-      env:
-        DB_HOST: ${{ secrets.DB_HOST }}
-        DB_USERNAME: ${{ secrets.DB_USERNAME }}
-        DB_PASSWORD: ${{ secrets.DB_PASSWORD }}
-        DB_PORT: ${{ secrets.DB_PORT }}
-        DB_NAME: ${{ secrets.DB_NAME }}
-        DASHBOARD: ${{ secrets.DASHBOARD }}
-        DASHBOARD_USER: ${{ secrets.DASHBOARD_USER }}
-        DASHBOARD_PASS: ${{ secrets.DASHBOARD_PASS }}
+      - name: Deploy on k8
+        if: ${{ github.ref == 'refs/heads/main' }}
+        run: |
+          kubectl config current-context;
+          just helm-upgrade;
+        env:
+          DB_HOST: ${{ secrets.DB_HOST }}
+          DB_USERNAME: ${{ secrets.DB_USERNAME }}
+          DB_PASSWORD: ${{ secrets.DB_PASSWORD }}
+          DB_PORT: ${{ secrets.DB_PORT }}
+          DB_NAME: ${{ secrets.DB_NAME }}
+          DASHBOARD: ${{ secrets.DASHBOARD }}
+          FIREBASE_ADMIN_AUTH_CREDENTIALS: ${{ secrets.FIREBASE_ADMIN_AUTH_CREDENTIALS }}
+          DASHBOARD_USER: ${{ secrets.DASHBOARD_USER }}
+          DASHBOARD_PASS: ${{ secrets.DASHBOARD_PASS }}
 
 

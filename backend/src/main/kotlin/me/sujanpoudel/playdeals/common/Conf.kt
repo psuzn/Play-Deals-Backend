@@ -2,7 +2,7 @@ package me.sujanpoudel.playdeals.common
 
 import me.sujanpoudel.playdeals.Conf
 import me.sujanpoudel.playdeals.Environment
-import me.sujanpoudel.playdeals.log
+import me.sujanpoudel.playdeals.logger
 import java.util.Base64
 
 class BootstrapException(val violations: List<String>) : RuntimeException()
@@ -42,7 +42,7 @@ fun buildConf(env: Map<String, String>) = com.github.michaelbull.result.runCatch
     val value = env[envVarName]
 
     return if (value.isNullOrBlank()) {
-      violations += "No $envVarName env var defined!".also { log.error { it } }
+      violations += "No $envVarName env var defined!".also { logger.error { it } }
       null
     } else {
       value

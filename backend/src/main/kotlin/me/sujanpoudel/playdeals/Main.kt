@@ -1,36 +1,31 @@
 package me.sujanpoudel.playdeals
 
 import com.fasterxml.jackson.databind.ObjectMapper
-import com.github.michaelbull.result.Err
-import com.github.michaelbull.result.Ok
+import com.github.michaelbull.result.getOrThrow
 import io.vertx.core.Vertx
+import io.vertx.kotlin.coroutines.await
+import kotlinx.coroutines.runBlocking
 import me.sujanpoudel.playdeals.common.BootstrapException
 import me.sujanpoudel.playdeals.common.buildConf
-import mu.KLogger
-import mu.KotlinLogging
 import org.kodein.di.direct
 import org.kodein.di.instance
+import kotlin.system.exitProcess
 
-val log: KLogger = KotlinLogging.logger {}
+private val vertx = Vertx.vertx()
+val configuration = buildConf(System.getenv()).getOrThrow {
+  (it as BootstrapException).violations.forEach(::println)
+  exitProcess(-1)
+}
 
-fun main() {
-  val vertx = Vertx.vertx()
-  val conf = when (val result = buildConf(System.getenv())) {
-    is Ok -> result.value
-    is Err -> {
-      (result.error as BootstrapException).violations.forEach(::println)
-      return
-    }
-  }
+val primaryDI = configureDI(vertx, configuration)
 
-  val di = DIConfigurer.configure(vertx, conf)
+fun main(): Unit = runBlocking {
+  primaryDI.direct.instance<ObjectMapper>()
 
-  vertx.deployVerticle(di.direct.instance<MainVerticle>())
-    .onSuccess { log.info("Deployed MainVerticle : $it") }
+  vertx.deployVerticle(primaryDI.direct.instance<MainVerticle>())
+    .onSuccess { logger.infoNotify("Deployed MainVerticle : $it") }
     .onFailure {
-      log.error(it) { "Error deploying main verticle" }
+      logger.error(it) { "Error deploying main verticle" }
       vertx.close()
-    }
-
-  di.direct.instance<ObjectMapper>()
+    }.await()
 }
