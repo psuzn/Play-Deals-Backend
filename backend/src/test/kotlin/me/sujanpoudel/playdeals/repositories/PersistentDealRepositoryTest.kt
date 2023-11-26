@@ -98,4 +98,20 @@ class PersistentDealRepositoryTest(vertx: Vertx) : IntegrationTest(vertx) {
 
     appDeal shouldContainInOrder listOf(deal1, deal0)
   }
+
+  @Test
+  fun `should get deals added after a time`() = runTest {
+    val deal0 = repository.upsert(newDeal)
+
+    val now = OffsetDateTime.now()
+
+    val deal1 = repository.upsert(newDeal.copy(id = "id_1"))
+    val deal2 = repository.upsert(newDeal.copy(id = "id_2"))
+
+    repository.upsert(newDeal.copy(id = "id_2"))
+
+    val count = repository.getNewDeals(now)
+
+    count.shouldContainAll(deal1, deal2)
+  }
 }

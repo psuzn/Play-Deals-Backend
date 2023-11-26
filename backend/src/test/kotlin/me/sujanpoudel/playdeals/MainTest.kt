@@ -6,6 +6,8 @@ import io.kotest.matchers.collections.shouldContainExactlyInAnyOrder
 import io.kotest.matchers.collections.shouldHaveSize
 import io.kotest.matchers.collections.shouldNotBeEmpty
 import io.kotest.matchers.shouldBe
+import me.sujanpoudel.playdeals.common.BootstrapException
+import me.sujanpoudel.playdeals.common.buildConf
 import org.junit.jupiter.api.Test
 
 class MainTest {
@@ -13,17 +15,43 @@ class MainTest {
   fun `Should return a proper conf with all values from env`() {
     val env = mutableMapOf(
       "APP_PORT" to "123",
-      "DB_HOST" to "localhost",
+      "CORS" to "*.example.com",
+
+      "DASHBOARD" to "true",
+      "DASHBOARD_USER" to "user",
+      "DASHBOARD_PASS" to "admin",
+
+      "DB_HOST" to "localhost1",
       "DB_USERNAME" to "u",
       "DB_PASSWORD" to "p",
-      "APP_PORT" to "123",
+      "DB_POOL_SIZE" to "8",
       "DB_PORT" to "3333",
-      "DB_NAME" to "db-name"
+      "DB_NAME" to "db-name",
+
+      "APP_PORT" to "123",
+
+      "FIREBASE_ADMIN_AUTH_CREDENTIALS" to "dGVzdF9jcmVk",
+      "ENV" to "DEVELOPMENT"
     )
 
     val conf = buildConf(env).unwrap()
 
+    conf.api.cors shouldBe "*.example.com"
+
+    conf.backgroundTask.dashboardEnabled shouldBe true
+    conf.backgroundTask.dashboardUserName shouldBe "user"
+    conf.backgroundTask.dashboardPassword shouldBe "admin"
+
+    conf.db.name shouldBe "db-name"
+    conf.db.host shouldBe "localhost1"
+    conf.db.password shouldBe "p"
+    conf.db.poolSize shouldBe 8
+    conf.db.username shouldBe "u"
+    conf.db.port shouldBe 3333
+
     conf.api.port shouldBe 123
+
+    conf.environment shouldBe Environment.DEVELOPMENT
   }
 
   @Test
@@ -33,22 +61,25 @@ class MainTest {
     )
 
     val err = buildConf(env).unwrapError()
+    err.printStackTrace()
     val violations = (err as BootstrapException).violations
-    violations.shouldHaveSize(3) shouldContainExactlyInAnyOrder listOf(
+    violations.shouldHaveSize(4) shouldContainExactlyInAnyOrder listOf(
       "Invalid ENV",
       "No DB_HOST env var defined!",
-      "No DB_USERNAME env var defined!"
+      "No DB_USERNAME env var defined!",
+      "No FIREBASE_ADMIN_AUTH_CREDENTIALS env var defined!"
     )
   }
 
   @Test
   fun `Should return a proper conf with some defaults being taken`() {
-    val env = mutableMapOf<String, String>(
+    val env = mutableMapOf(
       "DB_HOST" to "localhost",
       "DB_USERNAME" to "u",
       "DB_PASSWORD" to "p",
       "DB_PORT" to "3333",
-      "DB_NAME" to "db-name"
+      "DB_NAME" to "db-name",
+      "FIREBASE_ADMIN_AUTH_CREDENTIALS" to "dGVzdF9jcmVk"
     )
 
     val conf = buildConf(env).unwrap()
@@ -68,7 +99,8 @@ class MainTest {
       "Invalid APP_PORT",
       "Invalid ENV",
       "No DB_HOST env var defined!",
-      "No DB_USERNAME env var defined!"
+      "No DB_USERNAME env var defined!",
+      "No FIREBASE_ADMIN_AUTH_CREDENTIALS env var defined!"
     )
   }
 }

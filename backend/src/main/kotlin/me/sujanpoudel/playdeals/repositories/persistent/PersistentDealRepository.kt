@@ -8,6 +8,7 @@ import me.sujanpoudel.playdeals.domain.entities.DealEntity
 import me.sujanpoudel.playdeals.domain.entities.asAppDeal
 import me.sujanpoudel.playdeals.domain.insertValues
 import me.sujanpoudel.playdeals.repositories.DealRepository
+import java.time.OffsetDateTime
 
 class PersistentDealRepository(
   private val sqlClient: SqlClient
@@ -65,6 +66,16 @@ class PersistentDealRepository(
       SELECT * FROM "deal" where offer_expires_in < current_timestamp
       """.trimIndent()
     ).exec()
+      .await()
+      .map { it.asAppDeal() }
+  }
+
+  override suspend fun getNewDeals(since: OffsetDateTime): List<DealEntity> {
+    return sqlClient.preparedQuery(
+      """
+      SELECT *  FROM "deal" where created_at > $1
+      """.trimIndent()
+    ).exec(since)
       .await()
       .map { it.asAppDeal() }
   }

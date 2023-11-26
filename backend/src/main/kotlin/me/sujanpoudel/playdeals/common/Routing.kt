@@ -11,7 +11,7 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import me.sujanpoudel.playdeals.ContentTypes
 import me.sujanpoudel.playdeals.exceptions.ClientErrorException
-import me.sujanpoudel.playdeals.log
+import me.sujanpoudel.playdeals.logger
 
 fun Route.coHandler(fn: suspend (RoutingContext) -> Unit): Route {
   return handler { ctx ->
@@ -49,7 +49,7 @@ fun RoutingContext.handleExceptions(exception: Throwable) {
     .end(jsonResponse<Any>(message ?: UNKNOWN_ERROR_MESSAGE).encode())
 
   if (statusCode in 500..599) {
-    log.error(exception) {
+    logger.error(exception) {
       "Error while handing request at: ${request().path()}"
     }
   }
