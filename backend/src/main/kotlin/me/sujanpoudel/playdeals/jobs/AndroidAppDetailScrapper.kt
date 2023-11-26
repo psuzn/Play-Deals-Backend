@@ -13,8 +13,11 @@ import me.sujanpoudel.playdeals.common.SIMPLE_NAME
 import me.sujanpoudel.playdeals.common.loggingExecutionTime
 import me.sujanpoudel.playdeals.domain.AndroidAppDetail
 import me.sujanpoudel.playdeals.domain.asNewDeal
-import me.sujanpoudel.playdeals.log
+import me.sujanpoudel.playdeals.infoNotify
+import me.sujanpoudel.playdeals.logger
 import me.sujanpoudel.playdeals.repositories.DealRepository
+import me.sujanpoudel.playdeals.services.MessagingService
+import me.sujanpoudel.playdeals.services.sendMessageForNewDeal
 import org.jobrunr.jobs.lambdas.JobRequest
 import org.kodein.di.DI
 import org.kodein.di.DIAware
@@ -44,6 +47,7 @@ class AppDetailScrapper(
 
   private val jobsVerticle by instance<BackgroundJobsVerticle>()
   private val repository by instance<DealRepository>()
+  private val messagingService by instance<MessagingService>()
   private val webClient by lazy {
     WebClient.create(jobsVerticle.vertx, WebClientOptions().setDefaultHost("play.google.com"))
   }
@@ -59,18 +63,20 @@ class AppDetailScrapper(
 
     when {
       app.normalPrice == 0f -> {
-        log.info("App $packageName(${app.name}) doesn't have any price")
+        logger.infoNotify("App $packageName(${app.name}) doesn't have any price")
         repository.delete(packageName)
       }
 
       app.normalPrice == app.currentPrice -> {
-        log.info("App $packageName(${app.name}) deals has been expired")
+        logger.infoNotify("App $packageName(${app.name}) deals has been expired")
         repository.delete(packageName)
       }
 
       (app.currentPrice ?: 0f) < app.normalPrice -> {
-        log.info("Found deal for $packageName(${app.name}) ${app.currentPrice} ${app.currency}(${app.normalPrice} ${app.currency})")
-        repository.upsert(app.asNewDeal())
+        logger.info("Found deal for $packageName(${app.name}) ${app.currentPrice} ${app.currency}(${app.normalPrice} ${app.currency})")
+        repository.upsert(app.asNewDeal()).also {
+          messagingService.sendMessageForNewDeal(it)
+        }
       }
     }
   }

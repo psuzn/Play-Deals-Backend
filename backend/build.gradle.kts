@@ -73,6 +73,7 @@ dependencies {
 
   implementation("org.jobrunr:jobrunr:${Versions.JOB_RUNNER}")
   implementation("org.jobrunr:jobrunr-kotlin-1.8-support:${Versions.JOB_RUNNER}")
+  implementation("com.google.firebase:firebase-admin:9.2.0")
 
   testImplementation("org.junit.jupiter:junit-jupiter:${Versions.JUNIT_JUPITER}")
   testImplementation("io.kotest:kotest-assertions-core:${Versions.KO_TEST}")

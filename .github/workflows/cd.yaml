@@ -61,6 +61,7 @@ jobs:
           DB_PORT: ${{ secrets.DB_PORT }}
           DB_NAME: ${{ secrets.DB_NAME }}
           DASHBOARD: ${{ secrets.DASHBOARD }}
+          FIREBASE_ADMIN_AUTH_CREDENTIALS: ${{ secrets.FIREBASE_ADMIN_AUTH_CREDENTIALS }}
           DASHBOARD_USER: ${{ secrets.DASHBOARD_USER }}
           DASHBOARD_PASS: ${{ secrets.DASHBOARD_PASS }}
 

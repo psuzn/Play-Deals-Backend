@@ -6,7 +6,7 @@ import io.vertx.kotlin.coroutines.CoroutineVerticle
 import io.vertx.kotlin.coroutines.await
 import me.sujanpoudel.playdeals.Conf
 import me.sujanpoudel.playdeals.api.deals.appDealsApi
-import me.sujanpoudel.playdeals.log
+import me.sujanpoudel.playdeals.logger
 import org.kodein.di.DirectDI
 import org.kodein.di.instance
 
@@ -27,6 +27,6 @@ class ApiVerticle(
       .listen(config.api.port)
       .await()
 
-    log.info("API server running at : ${config.api.port}")
+    logger.info("API server running at : ${config.api.port}")
   }
 }

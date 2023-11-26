@@ -10,7 +10,8 @@ data class Conf(
   val db: DB,
   val api: Api,
   val environment: Environment,
-  val backgroundTask: BackgroundTask
+  val backgroundTask: BackgroundTask,
+  val firebaseAuthCredential: String
 ) {
   data class DB(
     val host: String,

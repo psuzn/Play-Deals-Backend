@@ -4,7 +4,6 @@ import io.vertx.kotlin.coroutines.CoroutineVerticle
 import org.jobrunr.configuration.JobRunr
 import org.jobrunr.configuration.JobRunrConfiguration
 import org.jobrunr.scheduling.JobRequestScheduler
-import org.jobrunr.storage.StorageProvider
 import org.kodein.di.DI
 import org.kodein.di.DIAware
 import org.kodein.di.direct
@@ -14,7 +13,6 @@ class BackgroundJobsVerticle(
   override val di: DI
 ) : CoroutineVerticle(), DIAware {
 
-  private val storageProvider by instance<StorageProvider>()
   private val jobRequestScheduler by instance<JobRequestScheduler>()
 
   override suspend fun start() {
@@ -23,13 +21,9 @@ class BackgroundJobsVerticle(
   }
 
   private fun setupRecurringJobs() {
-    jobRequestScheduler.createRecurrently(
-      RedditPostsScrapper.Request().asRecurringRequest()
-    )
-
-    jobRequestScheduler.createRecurrently(
-      AndroidAppExpiryCheckScheduler.Request().asRecurringRequest()
-    )
+    jobRequestScheduler.createRecurrently(RedditPostsScrapper.Request())
+    jobRequestScheduler.createRecurrently(AndroidAppExpiryCheckScheduler.Request())
+    jobRequestScheduler.createRecurrently(DealSummarizer.Request())
   }
 
   override suspend fun stop() {
