@@ -79,4 +79,14 @@ class PersistentDealRepository(
       .await()
       .map { it.asAppDeal() }
   }
+
+  override suspend fun getDealByPackageName(packageName: String): DealEntity? {
+    return sqlClient.preparedQuery(
+      """
+      SELECT *  FROM "deal" where id = $1
+      """.trimIndent()
+    ).exec(packageName)
+      .await()
+      .firstOrNull()?.asAppDeal()
+  }
 }

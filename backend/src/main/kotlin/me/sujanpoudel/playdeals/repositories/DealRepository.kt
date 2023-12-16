@@ -14,4 +14,6 @@ interface DealRepository {
   suspend fun getPotentiallyExpiredDeals(): List<DealEntity>
 
   suspend fun getNewDeals(since: OffsetDateTime): List<DealEntity>
+
+  suspend fun getDealByPackageName(packageName: String): DealEntity?
 }
