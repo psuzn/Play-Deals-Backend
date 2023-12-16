@@ -114,4 +114,25 @@ class PersistentDealRepositoryTest(vertx: Vertx) : IntegrationTest(vertx) {
 
     count.shouldContainAll(deal1, deal2)
   }
+
+  @Test
+  fun `getDealByPackageName should return correct deal by packageName`() = runTest {
+    val deal0 = repository.upsert(newDeal)
+
+    repository.upsert(newDeal.copy(id = "id_1"))
+    repository.upsert(newDeal.copy(id = "id_2"))
+
+    val deal01 = repository.getDealByPackageName(deal0.id)
+
+    deal0 shouldBe deal01
+  }
+
+  @Test
+  fun `getDealByPackageName should return null when there is no deal`() = runTest {
+    val deal0 = repository.upsert(newDeal)
+
+    val deal1 = repository.getDealByPackageName("id_3")
+
+    deal1 shouldBe null
+  }
 }
