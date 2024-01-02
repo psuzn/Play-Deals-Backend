@@ -56,7 +56,8 @@ abstract class IntegrationTest(private val vertx: Vertx) {
       "admin",
       "admin"
     ),
-    firebaseAuthCredential = ""
+    firebaseAuthCredential = "",
+    forexApiKey = ""
   )
 
   var di = configureDI(vertx, conf)
