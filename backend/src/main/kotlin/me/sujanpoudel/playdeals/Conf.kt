@@ -11,7 +11,8 @@ data class Conf(
   val api: Api,
   val environment: Environment,
   val backgroundTask: BackgroundTask,
-  val firebaseAuthCredential: String
+  val firebaseAuthCredential: String,
+  val forexApiKey: String
 ) {
   data class DB(
     val host: String,
