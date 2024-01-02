@@ -19,6 +19,7 @@ import me.sujanpoudel.playdeals.jobs.AndroidAppExpiryCheckScheduler
 import me.sujanpoudel.playdeals.jobs.AppDetailScrapper
 import me.sujanpoudel.playdeals.jobs.BackgroundJobsVerticle
 import me.sujanpoudel.playdeals.jobs.DealSummarizer
+import me.sujanpoudel.playdeals.jobs.ForexFetcher
 import me.sujanpoudel.playdeals.jobs.RedditPostsScrapper
 import me.sujanpoudel.playdeals.repositories.DealRepository
 import me.sujanpoudel.playdeals.repositories.KeyValuesRepository
@@ -153,6 +154,12 @@ fun configureDI(
     AndroidAppExpiryCheckScheduler(
       repository = instance(),
       requestScheduler = instance()
+    )
+  }
+  bindSingleton {
+    ForexFetcher(
+      di = di,
+      conf = instance()
     )
   }
 
