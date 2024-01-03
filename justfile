@@ -43,6 +43,7 @@ helm-upgrade imageTag=tag:
         --set backgroundTask.dashboardUser=$DASHBOARD_USER \
         --set backgroundTask.dashboardPass=$DASHBOARD_PASS \
         --set firebaseAdminAuthCredential=$FIREBASE_ADMIN_AUTH_CREDENTIALS \
+        --set forexApiKey=$FOREX_API_KEY \
         --set image.tag={{imageTag}} \
         --set image.repository={{imageRepo}}
 

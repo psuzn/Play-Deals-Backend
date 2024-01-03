@@ -21,6 +21,7 @@ class ApiVerticle(
     router.route().handler(CorsHandler.create().addRelativeOrigin(config.api.cors))
     router.route("/health/*").subRouter(healthApi(di, vertx))
     router.route("/api/deals/*").subRouter(appDealsApi(di, vertx))
+    router.route("/api/forex/*").subRouter(forexRateApi(di, vertx))
 
     vertx.createHttpServer()
       .requestHandler(router)

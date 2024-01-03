@@ -1,6 +1,7 @@
 package me.sujanpoudel.playdeals.jobs
 
 import io.vertx.kotlin.coroutines.CoroutineVerticle
+import me.sujanpoudel.playdeals.repositories.KeyValuesRepository
 import org.jobrunr.configuration.JobRunr
 import org.jobrunr.configuration.JobRunrConfiguration
 import org.jobrunr.scheduling.JobRequestScheduler
@@ -14,16 +15,22 @@ class BackgroundJobsVerticle(
 ) : CoroutineVerticle(), DIAware {
 
   private val jobRequestScheduler by instance<JobRequestScheduler>()
+  private val keyValuesRepository by instance<KeyValuesRepository>()
 
   override suspend fun start() {
     direct.instance<JobRunrConfiguration.JobRunrConfigurationResult>()
     setupRecurringJobs()
   }
 
-  private fun setupRecurringJobs() {
+  private suspend fun setupRecurringJobs() {
     jobRequestScheduler.createRecurrently(RedditPostsScrapper.Request())
     jobRequestScheduler.createRecurrently(AndroidAppExpiryCheckScheduler.Request())
     jobRequestScheduler.createRecurrently(DealSummarizer.Request())
+    jobRequestScheduler.createRecurrently(ForexFetcher.Request())
+
+    if (keyValuesRepository.getForexRate() == null) {
+      jobRequestScheduler.enqueue(ForexFetcher.Request.immediate())
+    }
   }
 
   override suspend fun stop() {

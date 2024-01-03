@@ -52,6 +52,8 @@ spec:
               value: {{ .Values.backgroundTask.dashboardPass | quote }}
             - name: "FIREBASE_ADMIN_AUTH_CREDENTIALS"
               value: {{ .Values.firebaseAdminAuthCredential | quote }}
+            - name: "FOREX_API_KEY"
+              value: {{ .Values.forexApiKey | quote }}
           ports:
             - name: api
               containerPort: 8888

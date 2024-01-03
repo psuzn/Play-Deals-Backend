@@ -19,6 +19,7 @@ import me.sujanpoudel.playdeals.jobs.AndroidAppExpiryCheckScheduler
 import me.sujanpoudel.playdeals.jobs.AppDetailScrapper
 import me.sujanpoudel.playdeals.jobs.BackgroundJobsVerticle
 import me.sujanpoudel.playdeals.jobs.DealSummarizer
+import me.sujanpoudel.playdeals.jobs.ForexFetcher
 import me.sujanpoudel.playdeals.jobs.RedditPostsScrapper
 import me.sujanpoudel.playdeals.repositories.DealRepository
 import me.sujanpoudel.playdeals.repositories.KeyValuesRepository
@@ -28,6 +29,7 @@ import me.sujanpoudel.playdeals.repositories.persistent.PersistentKeyValuesRepos
 import me.sujanpoudel.playdeals.services.MessagingService
 import me.sujanpoudel.playdeals.usecases.DBHealthUseCase
 import me.sujanpoudel.playdeals.usecases.GetDealsUseCase
+import me.sujanpoudel.playdeals.usecases.GetForexUseCase
 import me.sujanpoudel.playdeals.usecases.NewDealUseCase
 import org.flywaydb.core.Flyway
 import org.jobrunr.configuration.JobRunr
@@ -155,10 +157,17 @@ fun configureDI(
       requestScheduler = instance()
     )
   }
+  bindSingleton {
+    ForexFetcher(
+      di = di,
+      conf = instance()
+    )
+  }
 
   bindSingleton { DBHealthUseCase(di) }
   bindSingleton { GetDealsUseCase(di) }
   bindSingleton { NewDealUseCase(di) }
+  bindSingleton { GetForexUseCase(di) }
 
   bindSingleton<FirebaseOptions> {
     FirebaseOptions.builder()

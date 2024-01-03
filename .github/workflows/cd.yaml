@@ -62,6 +62,7 @@ jobs:
           DB_NAME: ${{ secrets.DB_NAME }}
           DASHBOARD: ${{ secrets.DASHBOARD }}
           FIREBASE_ADMIN_AUTH_CREDENTIALS: ${{ secrets.FIREBASE_ADMIN_AUTH_CREDENTIALS }}
+          FOREX_API_KEY: ${{ secrets.FOREX_API_KEY }}
           DASHBOARD_USER: ${{ secrets.DASHBOARD_USER }}
           DASHBOARD_PASS: ${{ secrets.DASHBOARD_PASS }}
 
