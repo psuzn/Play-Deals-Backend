@@ -12,6 +12,5 @@ data class ConversionRate(
   val currency: String,
   val symbol: String,
   val name: String,
-  val flag: String,
   val rate: Float
 )
