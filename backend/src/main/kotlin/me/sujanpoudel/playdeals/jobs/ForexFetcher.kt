@@ -19,6 +19,8 @@ import org.kodein.di.instance
 import java.time.Duration
 import java.time.OffsetDateTime
 import java.time.ZoneOffset
+import java.util.Currency
+import java.util.Locale
 import java.util.UUID
 
 class ForexFetcher(
@@ -57,10 +59,23 @@ class ForexFetcher(
     val epochSeconds = response.getLong("timestamp")
     val usdRate = response.getJsonObject("rates").getNumber("USD").toFloat()
 
+    val currencyLocale = Locale.getAvailableLocales().associateBy {
+      kotlin.runCatching { Currency.getInstance(it) }.getOrNull() ?: Locale.getDefault()
+    }
+
     return ForexRate(
       timestamp = OffsetDateTime.ofInstant(java.time.Instant.ofEpochSecond(epochSeconds), ZoneOffset.UTC),
       rates = response.getJsonObject("rates").map {
-        ConversionRate(it.key, (it.value as Number).toFloat() / usdRate)
+        val currency = kotlin.runCatching { Currency.getInstance(it.key) }.getOrNull()
+        val locale = currencyLocale.getOrDefault(currency, Locale.US)
+
+        ConversionRate(
+          currency = it.key,
+          symbol = currency?.getSymbol(locale) ?: "$",
+          name = currency?.displayName ?: it.key,
+          flag = locale.flagEmoji,
+          rate = (it.value as Number).toFloat() / usdRate
+        )
       }
     )
   }
@@ -89,3 +104,10 @@ suspend fun KeyValuesRepository.getForexRate(): ForexRate? = get(KEY_FOREX_RATE)
 }
 
 suspend fun KeyValuesRepository.saveForexRate(forexRate: ForexRate) = set(KEY_FOREX_RATE, Json.encode(forexRate))
+
+private val Locale.flagEmoji: String
+  get() {
+    val firstLetter = Character.codePointAt(country, 0) - 0x41 + 0x1F1E6
+    val secondLetter = Character.codePointAt(country, 1) - 0x41 + 0x1F1E6
+    return String(Character.toChars(firstLetter)) + String(Character.toChars(secondLetter))
+  }
