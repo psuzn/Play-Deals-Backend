@@ -23,7 +23,7 @@ class GetForexApiTest(vertx: Vertx) : IntegrationTest(vertx) {
 
     val forexRate = ForexRate(
       timestamp = OffsetDateTime.now().withOffsetSameInstant(ZoneOffset.UTC),
-      rates = listOf(ConversionRate("USD", "$", "US Dollar", "🇺🇸", 1.1f))
+      rates = listOf(ConversionRate("USD", "$", "US Dollar", 1.1f))
     )
     repository.saveForexRate(forexRate)
 
@@ -38,7 +38,7 @@ class GetForexApiTest(vertx: Vertx) : IntegrationTest(vertx) {
 
     val forexRate = ForexRate(
       timestamp = OffsetDateTime.now().withOffsetSameInstant(ZoneOffset.UTC),
-      rates = listOf(ConversionRate("USD", "$", "US Dollar", "🇺🇸", 1.1f))
+      rates = listOf(ConversionRate("USD", "$", "US Dollar", 1.1f))
     )
 
     repository.saveForexRate(forexRate)
@@ -56,7 +56,6 @@ class GetForexApiTest(vertx: Vertx) : IntegrationTest(vertx) {
           rate.getString("currency") shouldBe "USD"
           rate.getString("symbol") shouldBe "$"
           rate.getString("name") shouldBe "US Dollar"
-          rate.getString("flag") shouldBe "🇺🇸"
           rate.getFloat("rate") shouldBe 1.1f
         }
       }

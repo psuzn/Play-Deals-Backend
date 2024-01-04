@@ -1,5 +1,7 @@
 package me.sujanpoudel.playdeals.jobs
 
+import com.google.gson.Gson
+import com.google.gson.reflect.TypeToken
 import io.vertx.core.json.Json
 import io.vertx.ext.web.client.WebClient
 import io.vertx.ext.web.client.WebClientOptions
@@ -19,9 +21,20 @@ import org.kodein.di.instance
 import java.time.Duration
 import java.time.OffsetDateTime
 import java.time.ZoneOffset
-import java.util.Currency
 import java.util.Locale
 import java.util.UUID
+
+data class Currency(
+  val name: String,
+  val symbol: String
+)
+
+fun loadCurrencies(): HashMap<String, me.sujanpoudel.playdeals.jobs.Currency> {
+  return Gson().fromJson(
+    Thread.currentThread().contextClassLoader.getResource("currencies.json")?.readText() ?: "{}",
+    object : TypeToken<HashMap<String, me.sujanpoudel.playdeals.jobs.Currency>>() {}
+  )
+}
 
 class ForexFetcher(
   override val di: DI,
@@ -48,6 +61,8 @@ class ForexFetcher(
   }
 
   private suspend fun getForexRates(): ForexRate {
+    val currencies = loadCurrencies()
+
     val response = webClient.get("/v1/latest?access_key=${conf.forexApiKey}&format=1&base=EUR")
       .send()
       .await()
@@ -59,21 +74,15 @@ class ForexFetcher(
     val epochSeconds = response.getLong("timestamp")
     val usdRate = response.getJsonObject("rates").getNumber("USD").toFloat()
 
-    val currencyLocale = Locale.getAvailableLocales().associateBy {
-      kotlin.runCatching { Currency.getInstance(it) }.getOrNull() ?: Locale.getDefault()
-    }
-
     return ForexRate(
       timestamp = OffsetDateTime.ofInstant(java.time.Instant.ofEpochSecond(epochSeconds), ZoneOffset.UTC),
       rates = response.getJsonObject("rates").map {
-        val currency = kotlin.runCatching { Currency.getInstance(it.key) }.getOrNull()
-        val locale = currencyLocale.getOrDefault(currency, Locale.US)
+        val currency = currencies[it.key]
 
         ConversionRate(
           currency = it.key,
-          symbol = currency?.getSymbol(locale) ?: "$",
-          name = currency?.displayName ?: it.key,
-          flag = locale.flagEmoji,
+          symbol = currency?.symbol ?: "$",
+          name = currency?.name ?: it.key,
           rate = (it.value as Number).toFloat() / usdRate
         )
       }
