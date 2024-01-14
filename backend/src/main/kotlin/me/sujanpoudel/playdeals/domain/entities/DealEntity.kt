@@ -47,6 +47,6 @@ private fun Float.formatAsPrice(): String {
   return "$int.$formattedDecimal"
 }
 
-fun DealEntity.formattedCurrentPrice() = "${currency.asCurrencySymbol()}${normalPrice.formatAsPrice()}"
+fun DealEntity.formattedCurrentPrice() = "${currency.asCurrencySymbol()}${currentPrice.formatAsPrice()}"
 
 fun DealEntity.formattedNormalPrice() = "${currency.asCurrencySymbol()}${normalPrice.formatAsPrice()}"
