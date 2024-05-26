@@ -1,5 +1,6 @@
 package me.sujanpoudel.playdeals
 
+import com.fasterxml.jackson.databind.DeserializationFeature
 import com.fasterxml.jackson.databind.ObjectMapper
 import com.fasterxml.jackson.databind.SerializationFeature
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule
@@ -129,7 +130,8 @@ fun configureDI(
       .useJobActivator(instance())
       .useBackgroundJobServer(
         BackgroundJobServerConfiguration.usingStandardBackgroundJobServerConfiguration()
-          .andDeleteSucceededJobsAfter(Duration.ofHours(6))
+          .andDeleteSucceededJobsAfter(Duration.ofMinutes(10))
+          .andPermanentlyDeleteDeletedJobsAfter(Duration.ofMinutes(10))
           .andWorkerCount(1)
           .andPollIntervalInSeconds(10)
       )
@@ -154,7 +156,8 @@ fun configureDI(
   bindSingleton {
     AndroidAppExpiryCheckScheduler(
       repository = instance(),
-      requestScheduler = instance()
+      requestScheduler = instance(),
+      storageProvider = instance()
     )
   }
   bindSingleton {
@@ -193,5 +196,6 @@ private fun configureObjectMapper(): ObjectMapper {
     registerKotlinModule()
     registerModule(JavaTimeModule())
     configure(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS, false)
+    configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false)
   }
 }

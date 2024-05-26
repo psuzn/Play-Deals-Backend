@@ -8,4 +8,9 @@ data class ForexRate(
   val rates: List<ConversionRate>
 )
 
-data class ConversionRate(val currency: String, val rate: Float)
+data class ConversionRate(
+  val currency: String,
+  val symbol: String,
+  val name: String,
+  val rate: Float
+)

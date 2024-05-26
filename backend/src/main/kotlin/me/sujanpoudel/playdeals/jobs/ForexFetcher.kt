@@ -1,5 +1,7 @@
 package me.sujanpoudel.playdeals.jobs
 
+import com.google.gson.Gson
+import com.google.gson.reflect.TypeToken
 import io.vertx.core.json.Json
 import io.vertx.ext.web.client.WebClient
 import io.vertx.ext.web.client.WebClientOptions
@@ -19,7 +21,20 @@ import org.kodein.di.instance
 import java.time.Duration
 import java.time.OffsetDateTime
 import java.time.ZoneOffset
+import java.util.Locale
 import java.util.UUID
+
+data class Currency(
+  val name: String,
+  val symbol: String
+)
+
+fun loadCurrencies(): HashMap<String, me.sujanpoudel.playdeals.jobs.Currency> {
+  return Gson().fromJson(
+    Thread.currentThread().contextClassLoader.getResource("currencies.json")?.readText() ?: "{}",
+    object : TypeToken<HashMap<String, me.sujanpoudel.playdeals.jobs.Currency>>() {}
+  )
+}
 
 class ForexFetcher(
   override val di: DI,
@@ -46,6 +61,8 @@ class ForexFetcher(
   }
 
   private suspend fun getForexRates(): ForexRate {
+    val currencies = loadCurrencies()
+
     val response = webClient.get("/v1/latest?access_key=${conf.forexApiKey}&format=1&base=EUR")
       .send()
       .await()
@@ -60,7 +77,14 @@ class ForexFetcher(
     return ForexRate(
       timestamp = OffsetDateTime.ofInstant(java.time.Instant.ofEpochSecond(epochSeconds), ZoneOffset.UTC),
       rates = response.getJsonObject("rates").map {
-        ConversionRate(it.key, (it.value as Number).toFloat() / usdRate)
+        val currency = currencies[it.key]
+
+        ConversionRate(
+          currency = it.key,
+          symbol = currency?.symbol ?: "$",
+          name = currency?.name ?: it.key,
+          rate = (it.value as Number).toFloat() / usdRate
+        )
       }
     )
   }
@@ -89,3 +113,10 @@ suspend fun KeyValuesRepository.getForexRate(): ForexRate? = get(KEY_FOREX_RATE)
 }
 
 suspend fun KeyValuesRepository.saveForexRate(forexRate: ForexRate) = set(KEY_FOREX_RATE, Json.encode(forexRate))
+
+private val Locale.flagEmoji: String
+  get() {
+    val firstLetter = Character.codePointAt(country, 0) - 0x41 + 0x1F1E6
+    val secondLetter = Character.codePointAt(country, 1) - 0x41 + 0x1F1E6
+    return String(Character.toChars(firstLetter)) + String(Character.toChars(secondLetter))
+  }
