@@ -4,7 +4,7 @@ import io.vertx.core.json.JsonObject
 import io.vertx.ext.web.client.WebClient
 import io.vertx.ext.web.client.WebClientOptions
 import io.vertx.kotlin.core.json.jsonArrayOf
-import io.vertx.kotlin.coroutines.await
+import io.vertx.kotlin.coroutines.coAwait
 import me.sujanpoudel.playdeals.common.SIMPLE_NAME
 import me.sujanpoudel.playdeals.common.loggingExecutionTime
 import me.sujanpoudel.playdeals.infoNotify
@@ -25,52 +25,54 @@ import java.util.UUID
 data class RedditPost(
   val id: String,
   val content: String,
-  val createdAt: OffsetDateTime
+  val createdAt: OffsetDateTime,
 )
 
 class RedditPostsScrapper(
-  override val di: DI
+  override val di: DI,
 ) : CoJobRequestHandler<RedditPostsScrapper.Request>(), DIAware {
-
   private val verticle by instance<BackgroundJobsVerticle>()
   private val keyValueRepository by instance<KeyValuesRepository>()
   private val webClient by lazy {
     WebClient.create(
       verticle.vertx,
-      WebClientOptions().setDefaultHost("www.reddit.com")
+      WebClientOptions().setDefaultHost("www.reddit.com"),
     )
   }
   private val jobRequestScheduler by instance<JobRequestScheduler>()
 
-  override suspend fun handleRequest(jobRequest: Request): Unit = loggingExecutionTime(
-    "$SIMPLE_NAME:: handleRequest"
-  ) {
-    val lastPostTime = keyValueRepository.get(LAST_REDDIT_POST_TIME)?.let(OffsetDateTime::parse)
-
-    val posts = loggingExecutionTime(
-      "$SIMPLE_NAME:: Fetched reddit post, last created post was at : '$lastPostTime'"
+  override suspend fun handleRequest(jobRequest: Request): Unit =
+    loggingExecutionTime(
+      "$SIMPLE_NAME:: handleRequest",
     ) {
-      getLatestRedditPosts(lastPostTime ?: OffsetDateTime.MIN)
-    }
+      val lastPostTime = keyValueRepository.get(LAST_REDDIT_POST_TIME)?.let(OffsetDateTime::parse)
 
-    val appIds = posts.flatMap { post ->
-      PLAY_CONSOLE_REGX.findAll(post.content).toList().mapNotNull {
-        it.groupValues.lastOrNull()
+      val posts =
+        loggingExecutionTime(
+          "$SIMPLE_NAME:: Fetched reddit post, last created post was at : '$lastPostTime'",
+        ) {
+          getLatestRedditPosts(lastPostTime ?: OffsetDateTime.MIN)
+        }
+
+      val appIds =
+        posts.flatMap { post ->
+          PLAY_CONSOLE_REGX.findAll(post.content).toList().mapNotNull {
+            it.groupValues.lastOrNull()
+          }
+        }.distinct()
+
+      logger.infoNotify("$SIMPLE_NAME:: got ${posts.size} new posts (${appIds.size} Links)")
+
+      appIds.forEach { packageName ->
+        val id = UUID.nameUUIDFromBytes(packageName.toByteArray())
+        jobRequestScheduler.enqueue(id, AppDetailScrapper.Request(packageName))
       }
-    }.distinct()
 
-    logger.infoNotify("$SIMPLE_NAME:: got ${posts.size} new posts (${appIds.size} Links)")
-
-    appIds.forEach { packageName ->
-      val id = UUID.nameUUIDFromBytes(packageName.toByteArray())
-      jobRequestScheduler.enqueue(id, AppDetailScrapper.Request(packageName))
+      posts.firstOrNull()?.let {
+        logger.info("$SIMPLE_NAME:: Last reddit post was at ${it.createdAt} with id ${it.id}")
+        keyValueRepository.set(LAST_REDDIT_POST_TIME, it.createdAt.toString())
+      }
     }
-
-    posts.firstOrNull()?.let {
-      logger.info("$SIMPLE_NAME:: Last reddit post was at ${it.createdAt} with id ${it.id}")
-      keyValueRepository.set(LAST_REDDIT_POST_TIME, it.createdAt.toString())
-    }
-  }
 
   private suspend fun getLatestRedditPosts(lastPostTime: OffsetDateTime): List<RedditPost> {
     val path = "/r/googleplaydeals/new.json?limit=100"
@@ -93,13 +95,14 @@ class RedditPostsScrapper(
           RedditPost(
             id = data.getString("name"),
             content = data.getString("selftext").trim().ifBlank { data.getString("url") },
-            createdAt = data.getDouble("created").toLong().let {
-              OffsetDateTime.ofInstant(Instant.ofEpochSecond(it), ZoneOffset.UTC)
-            }
+            createdAt =
+              data.getDouble("created").toLong().let {
+                OffsetDateTime.ofInstant(Instant.ofEpochSecond(it), ZoneOffset.UTC)
+              },
           )
         }
       }
-      .await()
+      .coAwait()
       .filter {
         it.createdAt > lastPostTime
       }
@@ -110,13 +113,15 @@ class RedditPostsScrapper(
 
     companion object {
       private val JOB_ID: UUID = UUID.nameUUIDFromBytes("Reddit Posts".toByteArray())
-      operator fun invoke(): RecurringJobBuilder = RecurringJobBuilder.aRecurringJob()
-        .withJobRequest(Request())
-        .withAmountOfRetries(2)
-        .withLabels("Reddit")
-        .withName("Reddit Post Scrap")
-        .withId(JOB_ID.toString())
-        .withDuration(Duration.ofHours(1))
+
+      operator fun invoke(): RecurringJobBuilder =
+        RecurringJobBuilder.aRecurringJob()
+          .withJobRequest(Request())
+          .withAmountOfRetries(2)
+          .withLabels("Reddit")
+          .withName("Reddit Post Scrap")
+          .withId(JOB_ID.toString())
+          .withDuration(Duration.ofHours(1))
     }
   }
 

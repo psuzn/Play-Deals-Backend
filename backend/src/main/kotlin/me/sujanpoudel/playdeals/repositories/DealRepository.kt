@@ -5,7 +5,10 @@ import me.sujanpoudel.playdeals.domain.entities.DealEntity
 import java.time.OffsetDateTime
 
 interface DealRepository {
-  suspend fun getAll(skip: Int, take: Int): List<DealEntity>
+  suspend fun getAll(
+    skip: Int,
+    take: Int,
+  ): List<DealEntity>
 
   suspend fun upsert(appDeal: NewDeal): DealEntity
 

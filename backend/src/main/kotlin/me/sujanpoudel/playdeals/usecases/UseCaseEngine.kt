@@ -19,6 +19,7 @@ interface UseCase<in Input, out Output> {
   }
 
   suspend fun validate(input: Input) {}
+
   suspend fun doExecute(input: Input): Output
 }
 
@@ -27,10 +28,16 @@ suspend fun <Request, Input, Output> RoutingContext.executeUseCase(
   toContext: suspend () -> Request,
   toInput: (Request) -> Input,
   onError: (Throwable) -> Unit = this::handleExceptions,
-  onSuccess: (Output) -> Unit
-): Result<Output, Throwable> = runCatching { toContext.invoke() }
-  .andThen { runCatching { (it as? Validated)?.validate(); it } }
-  .andThen { runCatching { toInput.invoke(it) } }
-  .andThen { runCatching { useCase.execute(it) } }
-  .onSuccess(onSuccess)
-  .onFailure(onError)
+  onSuccess: (Output) -> Unit,
+): Result<Output, Throwable> =
+  runCatching { toContext.invoke() }
+    .andThen {
+      runCatching {
+        (it as? Validated)?.validate()
+        it
+      }
+    }
+    .andThen { runCatching { toInput.invoke(it) } }
+    .andThen { runCatching { useCase.execute(it) } }
+    .onSuccess(onSuccess)
+    .onFailure(onError)

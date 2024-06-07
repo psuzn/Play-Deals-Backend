@@ -17,23 +17,24 @@ data class NewDeal(
   val rating: String,
   val offerExpiresIn: OffsetDateTime,
   val type: DealType,
-  val source: String
+  val source: String,
 )
 
 val NewDeal.insertValues
-  get() = arrayOf(
-    id,
-    name,
-    icon,
-    images.toTypedArray(),
-    normalPrice,
-    currentPrice,
-    currency,
-    storeUrl,
-    category,
-    downloads,
-    rating,
-    offerExpiresIn,
-    type.toString(),
-    source
-  )
+  get() =
+    arrayOf(
+      id,
+      name,
+      icon,
+      images.toTypedArray(),
+      normalPrice,
+      currentPrice,
+      currency,
+      storeUrl,
+      category,
+      downloads,
+      rating,
+      offerExpiresIn,
+      type.toString(),
+      source,
+    )

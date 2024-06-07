@@ -20,11 +20,11 @@ fun Row.asAppDeal(): DealEntity {
     offerExpiresIn = get("offer_expires_in"),
     type = getString("type").asEnum(),
     source = get("source"),
-
     createdAt = get("created_at"),
-    updatedAt = get("updated_at")
+    updatedAt = get("updated_at"),
   )
 }
 
 fun Row?.valueOrNull() = this?.getString("value")
+
 fun Row.value(): String = getString("value")

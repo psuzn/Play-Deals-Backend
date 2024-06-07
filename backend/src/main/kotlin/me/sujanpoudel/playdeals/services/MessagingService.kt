@@ -28,55 +28,58 @@ suspend fun <T> ApiFuture<T>.awaitIgnoring() {
 
 class MessagingService(
   private val firebaseMessaging: FirebaseMessaging,
-  private val environment: Environment
+  private val environment: Environment,
 ) {
-
   private fun String.asTopic() = if (environment == Environment.PRODUCTION) this else "$this-dev"
 
   suspend fun sendMessageToTopic(
     topic: String,
     title: String,
     body: String,
-    imageUrl: String? = null
+    imageUrl: String? = null,
   ) {
-    val message = Message.builder()
-      .setTopic(topic.asTopic())
-      .setNotification(
-        Notification.builder()
-          .setTitle(title)
-          .setBody(body)
-          .setImage(imageUrl)
-          .build()
-      ).setAndroidConfig(
-        AndroidConfig.builder()
-          .setCollapseKey(topic)
-          .setNotification(
-            AndroidNotification.builder()
-              .setPriority(AndroidNotification.Priority.HIGH)
-              .setChannelId(topic)
-              .build()
-          )
-          .build()
-      ).build()
+    val message =
+      Message.builder()
+        .setTopic(topic.asTopic())
+        .setNotification(
+          Notification.builder()
+            .setTitle(title)
+            .setBody(body)
+            .setImage(imageUrl)
+            .build(),
+        ).setAndroidConfig(
+          AndroidConfig.builder()
+            .setCollapseKey(topic)
+            .setNotification(
+              AndroidNotification.builder()
+                .setPriority(AndroidNotification.Priority.HIGH)
+                .setChannelId(topic)
+                .build(),
+            )
+            .build(),
+        ).build()
 
     firebaseMessaging.sendAsync(message)
       .awaitIgnoring()
   }
 }
 
-suspend inline fun MessagingService.sendMessageForNewDeal(deal: DealEntity) = sendMessageToTopic(
-  topic = if (deal.currentPrice == 0f) {
-    Constants.PushNotificationTopic.NEW_FREE_DEAL
-  } else {
-    Constants.PushNotificationTopic.NEW_DISCOUNT_DEAL
-  },
-  title = "New deal found",
-  body = "${deal.name} was ${deal.formattedNormalPrice()} is now ${deal.formattedCurrentPrice()}",
-  imageUrl = deal.icon
-)
+suspend inline fun MessagingService.sendMessageForNewDeal(deal: DealEntity) =
+  sendMessageToTopic(
+    topic =
+      if (deal.currentPrice == 0f) {
+        Constants.PushNotificationTopic.NEW_FREE_DEAL
+      } else {
+        Constants.PushNotificationTopic.NEW_DISCOUNT_DEAL
+      },
+    title = "New deal found",
+    body = "${deal.name} was ${deal.formattedNormalPrice()} is now ${deal.formattedCurrentPrice()}",
+    imageUrl = deal.icon,
+  )
 
-suspend inline fun MessagingService.sendMaintenanceLog(message: String) = sendMessageToTopic(
-  topic = Constants.PushNotificationTopic.DEV_LOG,
-  title = "Maintenance Log",
-  body = message
-)
+suspend inline fun MessagingService.sendMaintenanceLog(message: String) =
+  sendMessageToTopic(
+    topic = Constants.PushNotificationTopic.DEV_LOG,
+    title = "Maintenance Log",
+    body = message,
+  )

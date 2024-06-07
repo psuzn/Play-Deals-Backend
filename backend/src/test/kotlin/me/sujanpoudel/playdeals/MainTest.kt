@@ -12,25 +12,23 @@ import org.junit.jupiter.api.Test
 class MainTest {
   @Test
   fun `Should return a proper conf with all values from env`() {
-    val env = mutableMapOf(
-      "ENV" to "DEVELOPMENT",
-      "APP_PORT" to "123",
-      "CORS" to "*.example.com",
-
-      "DASHBOARD" to "true",
-      "DASHBOARD_USER" to "user",
-      "DASHBOARD_PASS" to "admin",
-
-      "DB_HOST" to "localhost1",
-      "DB_USERNAME" to "u",
-      "DB_PASSWORD" to "p",
-      "DB_POOL_SIZE" to "8",
-      "DB_PORT" to "3333",
-      "DB_NAME" to "db-name",
-
-      "FIREBASE_ADMIN_AUTH_CREDENTIALS" to "dGVzdF9jcmVk",
-      "FOREX_API_KEY" to "forex_key"
-    )
+    val env =
+      mutableMapOf(
+        "ENV" to "DEVELOPMENT",
+        "APP_PORT" to "123",
+        "CORS" to "*.example.com",
+        "DASHBOARD" to "true",
+        "DASHBOARD_USER" to "user",
+        "DASHBOARD_PASS" to "admin",
+        "DB_HOST" to "localhost1",
+        "DB_USERNAME" to "u",
+        "DB_PASSWORD" to "p",
+        "DB_POOL_SIZE" to "8",
+        "DB_PORT" to "3333",
+        "DB_NAME" to "db-name",
+        "FIREBASE_ADMIN_AUTH_CREDENTIALS" to "dGVzdF9jcmVk",
+        "FOREX_API_KEY" to "forex_key",
+      )
 
     val conf = buildConf(env).unwrap()
 
@@ -55,14 +53,15 @@ class MainTest {
 
   @Test
   fun `Should return a proper conf with some defaults being taken`() {
-    val env = mutableMapOf(
-      "DB_PORT" to "3333",
-      "DB_HOST" to "localhost",
-      "DB_USERNAME" to "u",
-      "DB_PASSWORD" to "p",
-      "FIREBASE_ADMIN_AUTH_CREDENTIALS" to "dGVzdF9jcmVk",
-      "FOREX_API_KEY" to "forex_key"
-    )
+    val env =
+      mutableMapOf(
+        "DB_PORT" to "3333",
+        "DB_HOST" to "localhost",
+        "DB_USERNAME" to "u",
+        "DB_PASSWORD" to "p",
+        "FIREBASE_ADMIN_AUTH_CREDENTIALS" to "dGVzdF9jcmVk",
+        "FOREX_API_KEY" to "forex_key",
+      )
 
     val conf = buildConf(env).unwrap()
 
@@ -87,24 +86,26 @@ class MainTest {
 
   @Test
   fun `Should return all violations`() {
-    val env = mutableMapOf(
-      "APP_PORT" to "BAD_APP_PORT",
-      "ENV" to "prod"
-    )
+    val env =
+      mutableMapOf(
+        "APP_PORT" to "BAD_APP_PORT",
+        "ENV" to "prod",
+      )
 
     val violations = ((buildConf(env).unwrapError()) as BootstrapException).violations
     violations.shouldNotBeEmpty()
-    violations shouldContainExactlyInAnyOrder listOf(
-      "Invalid 'ENV'",
-      "Invalid 'APP_PORT'",
-      "No 'DB_HOST' env var defined!",
-      "Invalid 'DB_HOST'",
-      "No 'DB_USERNAME' env var defined!",
-      "Invalid 'DB_USERNAME'",
-      "No 'FIREBASE_ADMIN_AUTH_CREDENTIALS' env var defined!",
-      "Invalid 'FIREBASE_ADMIN_AUTH_CREDENTIALS'",
-      "No 'FOREX_API_KEY' env var defined!",
-      "Invalid 'FOREX_API_KEY'"
-    )
+    violations shouldContainExactlyInAnyOrder
+      listOf(
+        "Invalid 'ENV'",
+        "Invalid 'APP_PORT'",
+        "No 'DB_HOST' env var defined!",
+        "Invalid 'DB_HOST'",
+        "No 'DB_USERNAME' env var defined!",
+        "Invalid 'DB_USERNAME'",
+        "No 'FIREBASE_ADMIN_AUTH_CREDENTIALS' env var defined!",
+        "Invalid 'FIREBASE_ADMIN_AUTH_CREDENTIALS'",
+        "No 'FOREX_API_KEY' env var defined!",
+        "Invalid 'FOREX_API_KEY'",
+      )
   }
 }

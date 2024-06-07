@@ -5,7 +5,7 @@ import com.google.gson.reflect.TypeToken
 import io.vertx.core.json.Json
 import io.vertx.ext.web.client.WebClient
 import io.vertx.ext.web.client.WebClientOptions
-import io.vertx.kotlin.coroutines.await
+import io.vertx.kotlin.coroutines.coAwait
 import me.sujanpoudel.playdeals.Conf
 import me.sujanpoudel.playdeals.common.SIMPLE_NAME
 import me.sujanpoudel.playdeals.common.loggingExecutionTime
@@ -26,66 +26,68 @@ import java.util.UUID
 
 data class Currency(
   val name: String,
-  val symbol: String
+  val symbol: String,
 )
 
-fun loadCurrencies(): HashMap<String, me.sujanpoudel.playdeals.jobs.Currency> {
+fun loadCurrencies(): HashMap<String, Currency> {
   return Gson().fromJson(
     Thread.currentThread().contextClassLoader.getResource("currencies.json")?.readText() ?: "{}",
-    object : TypeToken<HashMap<String, me.sujanpoudel.playdeals.jobs.Currency>>() {}
+    object : TypeToken<HashMap<String, Currency>>() {},
   )
 }
 
 class ForexFetcher(
   override val di: DI,
-  private val conf: Conf
+  private val conf: Conf,
 ) : CoJobRequestHandler<ForexFetcher.Request>(), DIAware {
-
   private val backgroundJobsVerticle by instance<BackgroundJobsVerticle>()
 
   private val webClient by lazy {
     WebClient.create(
       backgroundJobsVerticle.vertx,
-      WebClientOptions().setSsl(false).setDefaultHost("api.exchangeratesapi.io")
+      WebClientOptions().setSsl(false).setDefaultHost("api.exchangeratesapi.io"),
     )
   }
 
   private val repository by instance<KeyValuesRepository>()
 
-  override suspend fun handleRequest(jobRequest: Request): Unit = loggingExecutionTime(
-    "$SIMPLE_NAME:: handleRequest"
-  ) {
-    val rates = getForexRates()
-    logger.info("got ${rates.rates.size} forex rate")
-    repository.saveForexRate(rates)
-  }
+  override suspend fun handleRequest(jobRequest: Request): Unit =
+    loggingExecutionTime(
+      "$SIMPLE_NAME:: handleRequest",
+    ) {
+      val rates = getForexRates()
+      logger.info("got ${rates.rates.size} forex rate")
+      repository.saveForexRate(rates)
+    }
 
   private suspend fun getForexRates(): ForexRate {
     val currencies = loadCurrencies()
 
-    val response = webClient.get("/v1/latest?access_key=${conf.forexApiKey}&format=1&base=EUR")
-      .send()
-      .await()
-      .bodyAsString()
-      .let {
-        Json.decodeValue(it) as io.vertx.core.json.JsonObject
-      }
+    val response =
+      webClient.get("/v1/latest?access_key=${conf.forexApiKey}&format=1&base=EUR")
+        .send()
+        .coAwait()
+        .bodyAsString()
+        .let {
+          Json.decodeValue(it) as io.vertx.core.json.JsonObject
+        }
 
     val epochSeconds = response.getLong("timestamp")
     val usdRate = response.getJsonObject("rates").getNumber("USD").toFloat()
 
     return ForexRate(
       timestamp = OffsetDateTime.ofInstant(java.time.Instant.ofEpochSecond(epochSeconds), ZoneOffset.UTC),
-      rates = response.getJsonObject("rates").map {
-        val currency = currencies[it.key]
+      rates =
+        response.getJsonObject("rates").map {
+          val currency = currencies[it.key]
 
-        ConversionRate(
-          currency = it.key,
-          symbol = currency?.symbol ?: "$",
-          name = currency?.name ?: it.key,
-          rate = (it.value as Number).toFloat() / usdRate
-        )
-      }
+          ConversionRate(
+            currency = it.key,
+            symbol = currency?.symbol ?: "$",
+            name = currency?.name ?: it.key,
+            rate = (it.value as Number).toFloat() / usdRate,
+          )
+        },
     )
   }
 
@@ -94,12 +96,14 @@ class ForexFetcher(
 
     companion object {
       private val JOB_ID: UUID = UUID.nameUUIDFromBytes("ForexFetch".toByteArray())
-      operator fun invoke(): RecurringJobBuilder = RecurringJobBuilder.aRecurringJob()
-        .withJobRequest(Request())
-        .withName("ForexFetch")
-        .withId(JOB_ID.toString())
-        .withDuration(Duration.ofDays(1))
-        .withAmountOfRetries(3)
+
+      operator fun invoke(): RecurringJobBuilder =
+        RecurringJobBuilder.aRecurringJob()
+          .withJobRequest(Request())
+          .withName("ForexFetch")
+          .withId(JOB_ID.toString())
+          .withDuration(Duration.ofDays(1))
+          .withAmountOfRetries(3)
 
       fun immediate(): JobRequest = Request()
     }
@@ -108,9 +112,10 @@ class ForexFetcher(
 
 private const val KEY_FOREX_RATE = "FOREX_RATE"
 
-suspend fun KeyValuesRepository.getForexRate(): ForexRate? = get(KEY_FOREX_RATE)?.let {
-  Json.decodeValue(it, ForexRate::class.java)
-}
+suspend fun KeyValuesRepository.getForexRate(): ForexRate? =
+  get(KEY_FOREX_RATE)?.let {
+    Json.decodeValue(it, ForexRate::class.java)
+  }
 
 suspend fun KeyValuesRepository.saveForexRate(forexRate: ForexRate) = set(KEY_FOREX_RATE, Json.encode(forexRate))
 

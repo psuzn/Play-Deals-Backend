@@ -52,7 +52,7 @@ inline fun <reified T : Any> DI.get(tag: String? = null) = direct.instance<T>(ta
 
 fun configureDI(
   vertx: Vertx,
-  conf: Conf
+  conf: Conf,
 ) = DI {
   bindSingleton { conf }
 
@@ -67,7 +67,7 @@ fun configureDI(
     MainVerticle(
       apiVerticle = instance(),
       backgroundJobsVerticle = instance(),
-      flywayVerticle = instance()
+      flywayVerticle = instance(),
     )
   }
 
@@ -114,7 +114,7 @@ fun configureDI(
         setURL("jdbc:postgresql://${conf.db.host}:${conf.db.port}/${conf.db.name}?currentSchema=job_runr")
         user = conf.db.username
         password = conf.db.password
-      }
+      },
     )
   }
 
@@ -125,15 +125,15 @@ fun configureDI(
         conf.backgroundTask.dashboardEnabled,
         JobRunrDashboardWebServerConfiguration
           .usingStandardDashboardConfiguration()
-          .andBasicAuthentication(conf.backgroundTask.dashboardUserName, conf.backgroundTask.dashboardPassword)
+          .andBasicAuthentication(conf.backgroundTask.dashboardUserName, conf.backgroundTask.dashboardPassword),
       )
       .useJobActivator(instance())
       .useBackgroundJobServer(
         BackgroundJobServerConfiguration.usingStandardBackgroundJobServerConfiguration()
           .andDeleteSucceededJobsAfter(Duration.ofMinutes(10))
           .andPermanentlyDeleteDeletedJobsAfter(Duration.ofMinutes(10))
-          .andWorkerCount(1)
-          .andPollIntervalInSeconds(10)
+          .andWorkerCount(2)
+          .andPollIntervalInSeconds(10),
       )
       .initialize()
   }
@@ -157,13 +157,13 @@ fun configureDI(
     AndroidAppExpiryCheckScheduler(
       repository = instance(),
       requestScheduler = instance(),
-      storageProvider = instance()
+      storageProvider = instance(),
     )
   }
   bindSingleton {
     ForexFetcher(
       di = di,
-      conf = instance()
+      conf = instance(),
     )
   }
 
