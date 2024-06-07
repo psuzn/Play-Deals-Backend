@@ -3,7 +3,7 @@ package me.sujanpoudel.playdeals
 import com.fasterxml.jackson.databind.ObjectMapper
 import com.github.michaelbull.result.getOrThrow
 import io.vertx.core.Vertx
-import io.vertx.kotlin.coroutines.await
+import io.vertx.kotlin.coroutines.coAwait
 import kotlinx.coroutines.runBlocking
 import me.sujanpoudel.playdeals.common.BootstrapException
 import me.sujanpoudel.playdeals.common.buildConf
@@ -27,5 +27,5 @@ fun main(): Unit = runBlocking {
     .onFailure {
       logger.error(it) { "Error deploying main verticle" }
       vertx.close()
-    }.await()
+    }.coAwait()
 }

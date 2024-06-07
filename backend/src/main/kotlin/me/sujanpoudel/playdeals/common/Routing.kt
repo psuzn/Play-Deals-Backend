@@ -27,21 +27,19 @@ fun Route.coHandler(fn: suspend (RoutingContext) -> Unit): Route {
 
 fun HttpServerResponse.contentType(value: String): HttpServerResponse = putHeader("Content-Type", value)
 
-fun <T> jsonResponse(
-  message: String = "Success",
-  data: T? = null
-): JsonObject = jsonObjectOf(
+fun <T> jsonResponse(message: String = "Success", data: T? = null): JsonObject = jsonObjectOf(
   "message" to message,
-  "data" to data
+  "data" to data,
 )
 
 const val UNKNOWN_ERROR_MESSAGE = "Something went wrong"
 
 fun RoutingContext.handleExceptions(exception: Throwable) {
-  val (message, statusCode) = when (exception) {
-    is ClientErrorException -> exception.message to exception.statusCode
-    else -> UNKNOWN_ERROR_MESSAGE to 500
-  }
+  val (message, statusCode) =
+    when (exception) {
+      is ClientErrorException -> exception.message to exception.statusCode
+      else -> UNKNOWN_ERROR_MESSAGE to 500
+    }
 
   this.response()
     .setStatusCode(statusCode)

@@ -6,9 +6,8 @@ import me.sujanpoudel.playdeals.logger
 import me.sujanpoudel.playdeals.repositories.DealRepository
 
 class CachingDealRepository(
-  private val delegate: DealRepository
+  private val delegate: DealRepository,
 ) : DealRepository by delegate {
-
   private val cache by lazy {
     HashMap<String, DealEntity>(0, 0.8f)
   }

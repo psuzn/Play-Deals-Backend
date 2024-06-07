@@ -2,12 +2,16 @@ package me.sujanpoudel.playdeals.jobs
 
 import com.fasterxml.jackson.core.JsonParser
 import com.fasterxml.jackson.databind.ObjectMapper
+import com.github.michaelbull.result.Result
+import com.github.michaelbull.result.getOrElse
+import com.github.michaelbull.result.runCatching
+import io.vertx.core.json.Json
 import io.vertx.core.json.JsonArray
 import io.vertx.core.json.JsonObject
 import io.vertx.ext.web.client.WebClient
 import io.vertx.ext.web.client.WebClientOptions
 import io.vertx.kotlin.core.json.jsonObjectOf
-import io.vertx.kotlin.coroutines.await
+import io.vertx.kotlin.coroutines.coAwait
 import me.sujanpoudel.playdeals.Constants
 import me.sujanpoudel.playdeals.common.SIMPLE_NAME
 import me.sujanpoudel.playdeals.common.loggingExecutionTime
@@ -38,13 +42,12 @@ enum class Value(val root: String, vararg val path: Int) {
   CURRENCY("ds:5", 1, 2, 57, 0, 0, 0, 0, 1, 0, 1),
   GENRE("ds:5", 1, 2, 79, 0, 0, 0),
   SCREENSHOTS_LIST("ds:5", 1, 2, 78, 0),
-  SCREENSHOTS_URL("", 3, 2);
+  SCREENSHOTS_URL("", 3, 2),
 }
 
 class AppDetailScrapper(
-  override val di: DI
+  override val di: DI,
 ) : CoJobRequestHandler<AppDetailScrapper.Request>(), DIAware {
-
   private val jobsVerticle by instance<BackgroundJobsVerticle>()
   private val repository by instance<DealRepository>()
   private val messagingService by instance<MessagingService>()
@@ -53,12 +56,14 @@ class AppDetailScrapper(
   }
 
   override suspend fun handleRequest(jobRequest: Request): Unit = loggingExecutionTime(
-    "$SIMPLE_NAME:: handleRequest ${jobRequest.packageName}"
+    "$SIMPLE_NAME:: handleRequest ${jobRequest.packageName}",
   ) {
     val packageName = jobRequest.packageName
 
     val app = loggingExecutionTime("$SIMPLE_NAME:: scrapping app details $packageName") {
       getAppDetail(packageName)
+    }.getOrElse {
+      throw RuntimeException("AppDetailScrapper failed to scrap details ${it.message}")
     }
 
     when {
@@ -68,12 +73,12 @@ class AppDetailScrapper(
       }
 
       app.normalPrice == app.currentPrice -> {
-        logger.infoNotify("App $packageName(${app.name}) deals has been expired")
+        infoNotify("App $packageName(${app.name}) deals has been expired")
         repository.delete(packageName)
       }
 
       (app.currentPrice ?: 0f) < app.normalPrice -> {
-        logger.info("Found deal for $packageName(${app.name}) ${app.currentPrice} ${app.currency}(${app.normalPrice} ${app.currency})")
+        info("Found deal for $packageName(${app.name}) ${app.currentPrice} ${app.currency}(${app.normalPrice} ${app.currency})")
         repository.upsert(app.asNewDeal()).also {
           messagingService.sendMessageForNewDeal(it)
         }
@@ -81,10 +86,10 @@ class AppDetailScrapper(
     }
   }
 
-  private suspend fun getAppDetail(packageName: String): AndroidAppDetail {
+  private suspend fun getAppDetail(packageName: String): Result<AndroidAppDetail, Throwable> = runCatching {
     val response = webClient.get("/store/apps/details?id=$packageName&hl=en&gl=us")
       .send()
-      .await()
+      .coAwait()
 
     val body = response.bodyAsString()
 
@@ -100,7 +105,7 @@ class AppDetailScrapper(
       }
       snippets
     }.map {
-      io.vertx.core.json.Json.decodeValue(mapper.readTree(it).toPrettyString()) as JsonObject
+      Json.decodeValue(mapper.readTree(it).toPrettyString()) as JsonObject
     }
 
     val combined = jsonObjectOf()
@@ -112,13 +117,14 @@ class AppDetailScrapper(
     val currentPrice = combined.getValue<Int>(Value.CURRENT_PRICE) / PRICE_MULTIPLIER
     val normalPrice = combined.getValueOrNull<Int>(Value.NORMAL_PRICE)?.div(PRICE_MULTIPLIER) ?: currentPrice
 
-    return AndroidAppDetail(
+    AndroidAppDetail(
       id = packageName,
       name = combined.getValue(Value.TITLE),
       icon = combined.getValue(Value.ICON),
-      images = (combined.getValue(Value.SCREENSHOTS_LIST) as JsonArray).mapNotNull {
-        getValue(it as JsonArray, Value.SCREENSHOTS_URL.path.toTypedArray()) as? String
-      },
+      images =
+        (combined.getValue(Value.SCREENSHOTS_LIST) as JsonArray).mapNotNull {
+          getValue(it as JsonArray, Value.SCREENSHOTS_URL.path.toTypedArray()) as? String
+        },
       normalPrice = normalPrice,
       currency = combined.getValue(Value.CURRENCY) as String,
       currentPrice = currentPrice,
@@ -126,10 +132,11 @@ class AppDetailScrapper(
       downloads = combined.getValue(Value.INSTALLS),
       storeUrl = "https://play.google.com/store/apps/details?id=$packageName",
       category = combined.getValue(Value.GENRE) as String,
-      offerExpiresIn = combined.getValueOrNull<Int>(Value.OFFER_END_TIME)?.let {
-        OffsetDateTime.ofInstant(Instant.ofEpochSecond(it.toLong()), ZoneOffset.UTC)
-      },
-      source = Constants.DealSources.APP_DEAL_SUBREDDIT
+      offerExpiresIn =
+        combined.getValueOrNull<Int>(Value.OFFER_END_TIME)?.let {
+          OffsetDateTime.ofInstant(Instant.ofEpochSecond(it.toLong()), ZoneOffset.UTC)
+        },
+      source = Constants.DealSources.APP_DEAL_SUBREDDIT,
     )
   }
 

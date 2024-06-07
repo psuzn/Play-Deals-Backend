@@ -5,8 +5,6 @@ import me.sujanpoudel.playdeals.common.SIMPLE_NAME
 import me.sujanpoudel.playdeals.common.loggingExecutionTime
 import me.sujanpoudel.playdeals.domain.entities.formattedCurrentPrice
 import me.sujanpoudel.playdeals.domain.entities.formattedNormalPrice
-import me.sujanpoudel.playdeals.infoNotify
-import me.sujanpoudel.playdeals.logger
 import me.sujanpoudel.playdeals.repositories.DealRepository
 import me.sujanpoudel.playdeals.repositories.KeyValuesRepository
 import me.sujanpoudel.playdeals.services.MessagingService
@@ -20,15 +18,14 @@ import java.time.OffsetDateTime
 import java.util.UUID
 
 class DealSummarizer(
-  override val di: DI
+  override val di: DI,
 ) : CoJobRequestHandler<DealSummarizer.Request>(), DIAware {
-
   private val dealRepository by instance<DealRepository>()
   private val keyValueRepository by instance<KeyValuesRepository>()
   private val messagingService by instance<MessagingService>()
 
   override suspend fun handleRequest(jobRequest: Request): Unit = loggingExecutionTime(
-    "$SIMPLE_NAME:: handleRequest"
+    "$SIMPLE_NAME:: handleRequest",
   ) {
     val lastTimestamp = keyValueRepository.get(LAST_SUMMARY_TIMESTAMP)?.let(OffsetDateTime::parse)
       ?: OffsetDateTime.now()
@@ -50,10 +47,10 @@ class DealSummarizer(
           "$dealsDescription\n\n +${deals.size - maxCount} more..."
         } else {
           dealsDescription
-        }
+        },
       )
     } else {
-      logger.infoNotify("$SIMPLE_NAME:: haven't got any deals since $lastTimestamp")
+      infoNotify("$SIMPLE_NAME:: haven't got any deals since $lastTimestamp")
     }
 
     keyValueRepository.set(LAST_SUMMARY_TIMESTAMP, OffsetDateTime.now().toString())
@@ -64,6 +61,7 @@ class DealSummarizer(
 
     companion object {
       private val JOB_ID: UUID = UUID.nameUUIDFromBytes("deal-summarizer".toByteArray())
+
       operator fun invoke(): RecurringJobBuilder = RecurringJobBuilder.aRecurringJob()
         .withJobRequest(Request())
         .withCron(Cron.daily(16))

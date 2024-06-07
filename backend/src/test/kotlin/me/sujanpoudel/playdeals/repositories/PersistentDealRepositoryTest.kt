@@ -5,7 +5,7 @@ import io.kotest.matchers.collections.shouldContainInOrder
 import io.kotest.matchers.equality.shouldBeEqualToComparingFields
 import io.kotest.matchers.shouldBe
 import io.vertx.core.Vertx
-import io.vertx.kotlin.coroutines.await
+import io.vertx.kotlin.coroutines.coAwait
 import io.vertx.sqlclient.SqlClient
 import me.sujanpoudel.playdeals.Constants
 import me.sujanpoudel.playdeals.IntegrationTest
@@ -19,36 +19,37 @@ import org.junit.jupiter.api.Test
 import java.time.OffsetDateTime
 
 class PersistentDealRepositoryTest(vertx: Vertx) : IntegrationTest(vertx) {
-
   private val repository by lazy { di.get<PersistentDealRepository>() }
   private val sqlClient by lazy { di.get<SqlClient>() }
 
-  private val newDeal = NewDeal(
-    id = "id",
-    name = "name",
-    icon = "icon",
-    images = listOf("img0", "img1"),
-    normalPrice = 12f,
-    currentPrice = 12f,
-    currency = "USD",
-    storeUrl = "store_url",
-    category = "unknown",
-    downloads = "12+",
-    rating = "12",
-    offerExpiresIn = OffsetDateTime.now(),
-    type = DealType.ANDROID_APP,
-    source = Constants.DealSources.APP_DEAL_SUBREDDIT
-  )
+  private val newDeal =
+    NewDeal(
+      id = "id",
+      name = "name",
+      icon = "icon",
+      images = listOf("img0", "img1"),
+      normalPrice = 12f,
+      currentPrice = 12f,
+      currency = "USD",
+      storeUrl = "store_url",
+      category = "unknown",
+      downloads = "12+",
+      rating = "12",
+      offerExpiresIn = OffsetDateTime.now(),
+      type = DealType.ANDROID_APP,
+      source = Constants.DealSources.APP_DEAL_SUBREDDIT,
+    )
 
   @Test
   fun `should create new app deal in db`() = runTest {
     val appDeal = repository.upsert(newDeal)
 
-    val appDealFromDb = sqlClient.preparedQuery(""" SELECT * from "deal" where id=$1""")
-      .exec(newDeal.id)
-      .await()
-      .first()
-      .asAppDeal()
+    val appDealFromDb =
+      sqlClient.preparedQuery(""" SELECT * from "deal" where id=$1""")
+        .exec(newDeal.id)
+        .coAwait()
+        .first()
+        .asAppDeal()
 
     appDeal.shouldBeEqualToComparingFields(appDealFromDb)
   }
@@ -59,11 +60,12 @@ class PersistentDealRepositoryTest(vertx: Vertx) : IntegrationTest(vertx) {
 
     repository.upsert(newDeal.copy(name = "Updated Name"))
 
-    val appDealFromDb = sqlClient.preparedQuery(""" SELECT * from "deal" where id=$1""")
-      .exec(newDeal.id)
-      .await()
-      .first()
-      .asAppDeal()
+    val appDealFromDb =
+      sqlClient.preparedQuery(""" SELECT * from "deal" where id=$1""")
+        .exec(newDeal.id)
+        .coAwait()
+        .first()
+        .asAppDeal()
 
     appDealFromDb.name.shouldBe("Updated Name")
   }
@@ -75,7 +77,7 @@ class PersistentDealRepositoryTest(vertx: Vertx) : IntegrationTest(vertx) {
 
     sqlClient.preparedQuery("""SELECT * from "deal" where id=$1""")
       .exec(newDeal.id)
-      .await()
+      .coAwait()
       .rowCount() shouldBe 0
   }
 

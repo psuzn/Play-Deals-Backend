@@ -16,7 +16,7 @@ data class AndroidAppDetail(
   val downloads: String,
   val rating: String,
   val offerExpiresIn: OffsetDateTime?,
-  val source: String
+  val source: String,
 )
 
 fun AndroidAppDetail.asNewDeal() = NewDeal(
@@ -33,5 +33,5 @@ fun AndroidAppDetail.asNewDeal() = NewDeal(
   rating = rating,
   offerExpiresIn = offerExpiresIn!!,
   type = DealType.ANDROID_APP,
-  source = source
+  source = source,
 )

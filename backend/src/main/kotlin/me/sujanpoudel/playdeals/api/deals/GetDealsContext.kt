@@ -5,9 +5,8 @@ import me.sujanpoudel.playdeals.exceptions.ClientErrorException
 import me.sujanpoudel.playdeals.usecases.Validated
 
 class GetDealsContext(
-  private val param: MultiMap
+  private val param: MultiMap,
 ) : Validated {
-
   val skip by lazy { param.get("skip")?.toIntOrNull() ?: 0 }
   val take by lazy { param.get("take")?.toIntOrNull() ?: 10 }
 

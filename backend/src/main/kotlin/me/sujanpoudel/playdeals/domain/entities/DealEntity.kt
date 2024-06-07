@@ -7,7 +7,7 @@ enum class DealType {
   ANDROID_APP,
   IOS_APP,
   DESKTOP_APP,
-  OTHER
+  OTHER,
 }
 
 data class DealEntity(
@@ -26,7 +26,7 @@ data class DealEntity(
   val type: DealType,
   val source: String,
   val createdAt: OffsetDateTime,
-  val updatedAt: OffsetDateTime
+  val updatedAt: OffsetDateTime,
 )
 
 private fun String.asCurrencySymbol() = when (this) {
@@ -38,11 +38,12 @@ private fun Float.formatAsPrice(): String {
   val int = toInt()
   val decimal = ((this - int) * 100).roundToInt()
 
-  val formattedDecimal = if (decimal < 10) {
-    "${decimal}0"
-  } else {
-    "$decimal"
-  }
+  val formattedDecimal =
+    if (decimal < 10) {
+      "${decimal}0"
+    } else {
+      "$decimal"
+    }
 
   return "$int.$formattedDecimal"
 }

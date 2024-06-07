@@ -3,7 +3,7 @@ package me.sujanpoudel.playdeals.api.deals
 import io.kotest.matchers.shouldBe
 import io.vertx.core.Vertx
 import io.vertx.kotlin.core.json.jsonObjectOf
-import io.vertx.kotlin.coroutines.await
+import io.vertx.kotlin.coroutines.coAwait
 import me.sujanpoudel.playdeals.Constants
 import me.sujanpoudel.playdeals.IntegrationTest
 import me.sujanpoudel.playdeals.domain.NewDeal
@@ -17,12 +17,12 @@ import java.time.OffsetDateTime
 import java.util.UUID
 
 class NewDealApiTest(vertx: Vertx) : IntegrationTest(vertx) {
-
   @Test
   fun `should send error response if packageName is null`() = runTest {
-    val response = httpClient.post("/api/deals")
-      .sendJson(jsonObjectOf())
-      .await()
+    val response =
+      httpClient.post("/api/deals")
+        .sendJson(jsonObjectOf())
+        .coAwait()
 
     val responseBody = response.bodyAsJsonObject()
 
@@ -32,9 +32,10 @@ class NewDealApiTest(vertx: Vertx) : IntegrationTest(vertx) {
 
   @Test
   fun `should send error response if packageName is invalid`() = runTest {
-    val response = httpClient.post("/api/deals")
-      .sendJson(jsonObjectOf("packageName" to "11111"))
-      .await()
+    val response =
+      httpClient.post("/api/deals")
+        .sendJson(jsonObjectOf("packageName" to "11111"))
+        .coAwait()
 
     val responseBody = response.bodyAsJsonObject()
 
@@ -48,9 +49,10 @@ class NewDealApiTest(vertx: Vertx) : IntegrationTest(vertx) {
 
     val packageName = "com.example.app"
 
-    val response = httpClient.post("/api/deals")
-      .sendJson(jsonObjectOf("packageName" to packageName))
-      .await()
+    val response =
+      httpClient.post("/api/deals")
+        .sendJson(jsonObjectOf("packageName" to packageName))
+        .coAwait()
 
     val job = storageProvider.getJobById(UUID.nameUUIDFromBytes(packageName.encodeToByteArray()))
 
@@ -66,28 +68,30 @@ class NewDealApiTest(vertx: Vertx) : IntegrationTest(vertx) {
 
     val packageName = "com.example.app"
 
-    val newDeal = NewDeal(
-      id = packageName,
-      name = "name",
-      icon = "icon",
-      images = listOf("img0", "img1"),
-      normalPrice = 12f,
-      currentPrice = 12f,
-      currency = "USD",
-      storeUrl = "store_url",
-      category = "unknown",
-      downloads = "12+",
-      rating = "12",
-      offerExpiresIn = OffsetDateTime.now(),
-      type = DealType.ANDROID_APP,
-      source = Constants.DealSources.APP_DEAL_SUBREDDIT
-    )
+    val newDeal =
+      NewDeal(
+        id = packageName,
+        name = "name",
+        icon = "icon",
+        images = listOf("img0", "img1"),
+        normalPrice = 12f,
+        currentPrice = 12f,
+        currency = "USD",
+        storeUrl = "store_url",
+        category = "unknown",
+        downloads = "12+",
+        rating = "12",
+        offerExpiresIn = OffsetDateTime.now(),
+        type = DealType.ANDROID_APP,
+        source = Constants.DealSources.APP_DEAL_SUBREDDIT,
+      )
 
     repository.upsert(newDeal)
 
-    val response = httpClient.post("/api/deals")
-      .sendJson(jsonObjectOf("packageName" to packageName))
-      .await()
+    val response =
+      httpClient.post("/api/deals")
+        .sendJson(jsonObjectOf("packageName" to packageName))
+        .coAwait()
 
     response.statusCode() shouldBe 200
   }

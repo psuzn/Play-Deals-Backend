@@ -13,16 +13,12 @@ fun buildConf(envs: Map<String, String>) = com.github.michaelbull.result.runCatc
   val violations = mutableListOf<String>()
 
   @Suppress("UNCHECKED_CAST")
-  fun <T> env(
-    envVarName: String,
-    default: String? = null,
-    converter: (String) -> T? = { it as? T }
-  ): T? = (
+  fun <T> env(envVarName: String, default: String? = null, converter: (String) -> T? = { it as? T }): T? = (
     envs[envVarName] ?: default ?: run {
       violations += "No '$envVarName' env var defined!".also { logger.error { it } }
       null
     }
-    )?.let(converter) ?: run {
+  )?.let(converter) ?: run {
     violations += "Invalid '$envVarName'"
     null
   }
@@ -43,9 +39,10 @@ fun buildConf(envs: Map<String, String>) = com.github.michaelbull.result.runCatc
   val dashboardUser = env<String>("DASHBOARD_USER", "admin")
   val dashboardPassword = env<String>("DASHBOARD_PASS", "admin")
 
-  val firebaseAuthCredential = env("FIREBASE_ADMIN_AUTH_CREDENTIALS") {
-    Base64.getDecoder().decode(it).decodeToString()
-  }
+  val firebaseAuthCredential =
+    env("FIREBASE_ADMIN_AUTH_CREDENTIALS") {
+      Base64.getDecoder().decode(it).decodeToString()
+    }
 
   val forexApiKey = env<String>("FOREX_API_KEY")
 
@@ -55,21 +52,23 @@ fun buildConf(envs: Map<String, String>) = com.github.michaelbull.result.runCatc
     Conf(
       api = Conf.Api(appPort!!, cors = cors!!),
       environment = environment!!,
-      db = Conf.DB(
-        host = dbHost!!,
-        port = dbPort!!,
-        name = dbName!!,
-        username = dbUsername!!,
-        password = dbPassword!!,
-        poolSize = dbPoolSize!!
-      ),
-      backgroundTask = Conf.BackgroundTask(
-        dashboardEnabled = dashboardEnabled!!,
-        dashboardUserName = dashboardUser!!,
-        dashboardPassword = dashboardPassword!!
-      ),
+      db =
+        Conf.DB(
+          host = dbHost!!,
+          port = dbPort!!,
+          name = dbName!!,
+          username = dbUsername!!,
+          password = dbPassword!!,
+          poolSize = dbPoolSize!!,
+        ),
+      backgroundTask =
+        Conf.BackgroundTask(
+          dashboardEnabled = dashboardEnabled!!,
+          dashboardUserName = dashboardUser!!,
+          dashboardPassword = dashboardPassword!!,
+        ),
       firebaseAuthCredential = firebaseAuthCredential!!,
-      forexApiKey = forexApiKey!!
+      forexApiKey = forexApiKey!!,
     )
   }
 }

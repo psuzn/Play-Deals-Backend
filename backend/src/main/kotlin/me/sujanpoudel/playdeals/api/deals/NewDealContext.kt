@@ -6,9 +6,8 @@ import me.sujanpoudel.playdeals.exceptions.ClientErrorException
 import me.sujanpoudel.playdeals.usecases.Validated
 
 class NewDealContext(
-  private val request: JsonObject
+  private val request: JsonObject,
 ) : Validated {
-
   private val packageNameField = "packageName"
 
   val packageName: String by lazy { request.getString(packageNameField) }

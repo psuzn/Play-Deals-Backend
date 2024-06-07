@@ -8,9 +8,8 @@ import org.kodein.di.instance
 import java.util.UUID
 
 class NewDealUseCase(
-  di: DI
+  di: DI,
 ) : UseCase<String, Unit> {
-
   private val jobRequestScheduler by di.instance<JobRequestScheduler>()
   private val dealsRepository by di.instance<DealRepository>()
 
