@@ -2,6 +2,10 @@ package me.sujanpoudel.playdeals.jobs
 
 import com.fasterxml.jackson.core.JsonParser
 import com.fasterxml.jackson.databind.ObjectMapper
+import com.github.michaelbull.result.Result
+import com.github.michaelbull.result.getOrElse
+import com.github.michaelbull.result.runCatching
+import io.vertx.core.json.Json
 import io.vertx.core.json.JsonArray
 import io.vertx.core.json.JsonObject
 import io.vertx.ext.web.client.WebClient
@@ -56,10 +60,11 @@ class AppDetailScrapper(
   ) {
     val packageName = jobRequest.packageName
 
-    val app =
-      loggingExecutionTime("$SIMPLE_NAME:: scrapping app details $packageName") {
-        getAppDetail(packageName)
-      }
+    val app = loggingExecutionTime("$SIMPLE_NAME:: scrapping app details $packageName") {
+      getAppDetail(packageName)
+    }.getOrElse {
+      throw RuntimeException("AppDetailScrapper failed to scrap details ${it.message}")
+    }
 
     when {
       app.normalPrice == 0f -> {
@@ -68,12 +73,12 @@ class AppDetailScrapper(
       }
 
       app.normalPrice == app.currentPrice -> {
-        logger.infoNotify("App $packageName(${app.name}) deals has been expired")
+        infoNotify("App $packageName(${app.name}) deals has been expired")
         repository.delete(packageName)
       }
 
       (app.currentPrice ?: 0f) < app.normalPrice -> {
-        logger.info("Found deal for $packageName(${app.name}) ${app.currentPrice} ${app.currency}(${app.normalPrice} ${app.currency})")
+        info("Found deal for $packageName(${app.name}) ${app.currentPrice} ${app.currency}(${app.normalPrice} ${app.currency})")
         repository.upsert(app.asNewDeal()).also {
           messagingService.sendMessageForNewDeal(it)
         }
@@ -81,30 +86,27 @@ class AppDetailScrapper(
     }
   }
 
-  private suspend fun getAppDetail(packageName: String): AndroidAppDetail {
-    val response =
-      webClient.get("/store/apps/details?id=$packageName&hl=en&gl=us")
-        .send()
-        .coAwait()
+  private suspend fun getAppDetail(packageName: String): Result<AndroidAppDetail, Throwable> = runCatching {
+    val response = webClient.get("/store/apps/details?id=$packageName&hl=en&gl=us")
+      .send()
+      .coAwait()
 
     val body = response.bodyAsString()
 
-    val mapper =
-      ObjectMapper().apply {
-        configure(JsonParser.Feature.ALLOW_SINGLE_QUOTES, true)
-        configure(JsonParser.Feature.ALLOW_UNQUOTED_FIELD_NAMES, true)
-      }
+    val mapper = ObjectMapper().apply {
+      configure(JsonParser.Feature.ALLOW_SINGLE_QUOTES, true)
+      configure(JsonParser.Feature.ALLOW_UNQUOTED_FIELD_NAMES, true)
+    }
 
-    val matches =
-      INIT_DATA_PATTERN.matcher(body).let {
-        val snippets = mutableListOf<String>()
-        while (it.find()) {
-          snippets.add(it.group(1))
-        }
-        snippets
-      }.map {
-        io.vertx.core.json.Json.decodeValue(mapper.readTree(it).toPrettyString()) as JsonObject
+    val matches = INIT_DATA_PATTERN.matcher(body).let {
+      val snippets = mutableListOf<String>()
+      while (it.find()) {
+        snippets.add(it.group(1))
       }
+      snippets
+    }.map {
+      Json.decodeValue(mapper.readTree(it).toPrettyString()) as JsonObject
+    }
 
     val combined = jsonObjectOf()
 
@@ -115,7 +117,7 @@ class AppDetailScrapper(
     val currentPrice = combined.getValue<Int>(Value.CURRENT_PRICE) / PRICE_MULTIPLIER
     val normalPrice = combined.getValueOrNull<Int>(Value.NORMAL_PRICE)?.div(PRICE_MULTIPLIER) ?: currentPrice
 
-    return AndroidAppDetail(
+    AndroidAppDetail(
       id = packageName,
       name = combined.getValue(Value.TITLE),
       icon = combined.getValue(Value.ICON),

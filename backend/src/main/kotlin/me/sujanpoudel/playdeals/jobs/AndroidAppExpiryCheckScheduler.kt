@@ -2,7 +2,6 @@ package me.sujanpoudel.playdeals.jobs
 
 import me.sujanpoudel.playdeals.common.SIMPLE_NAME
 import me.sujanpoudel.playdeals.common.loggingExecutionTime
-import me.sujanpoudel.playdeals.logger
 import me.sujanpoudel.playdeals.repositories.DealRepository
 import org.jobrunr.jobs.lambdas.JobRequest
 import org.jobrunr.jobs.states.StateName
@@ -30,7 +29,7 @@ class AndroidAppExpiryCheckScheduler(
 
     val lastUpdatedTime = Instant.now().minus(1, ChronoUnit.HOURS)
     val jobs = storageProvider.deleteJobsPermanently(StateName.FAILED, lastUpdatedTime)
-    logger.info("deleted FAILED `$jobs`")
+    info("deleted FAILED `$jobs`")
   }
 
   class Request private constructor() : JobRequest {

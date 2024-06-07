@@ -5,8 +5,6 @@ import me.sujanpoudel.playdeals.common.SIMPLE_NAME
 import me.sujanpoudel.playdeals.common.loggingExecutionTime
 import me.sujanpoudel.playdeals.domain.entities.formattedCurrentPrice
 import me.sujanpoudel.playdeals.domain.entities.formattedNormalPrice
-import me.sujanpoudel.playdeals.infoNotify
-import me.sujanpoudel.playdeals.logger
 import me.sujanpoudel.playdeals.repositories.DealRepository
 import me.sujanpoudel.playdeals.repositories.KeyValuesRepository
 import me.sujanpoudel.playdeals.services.MessagingService
@@ -29,33 +27,30 @@ class DealSummarizer(
   override suspend fun handleRequest(jobRequest: Request): Unit = loggingExecutionTime(
     "$SIMPLE_NAME:: handleRequest",
   ) {
-    val lastTimestamp =
-      keyValueRepository.get(LAST_SUMMARY_TIMESTAMP)?.let(OffsetDateTime::parse)
-        ?: OffsetDateTime.now()
+    val lastTimestamp = keyValueRepository.get(LAST_SUMMARY_TIMESTAMP)?.let(OffsetDateTime::parse)
+      ?: OffsetDateTime.now()
 
     val deals = dealRepository.getNewDeals(lastTimestamp)
 
     if (deals.isNotEmpty()) {
       val maxCount = 6
-      val dealsDescription =
-        deals
-          .take(maxCount)
-          .mapIndexed { index, deal ->
-            "${index + 1}. ${deal.name} was ${deal.formattedNormalPrice()} is now ${deal.formattedCurrentPrice()}"
-          }.joinToString("\n")
+      val dealsDescription = deals
+        .take(maxCount)
+        .mapIndexed { index, deal ->
+          "${index + 1}. ${deal.name} was ${deal.formattedNormalPrice()} is now ${deal.formattedCurrentPrice()}"
+        }.joinToString("\n")
 
       messagingService.sendMessageToTopic(
         topic = Constants.PushNotificationTopic.DEALS_SUMMARY,
         title = "New ${deals.size} app deals are found since yesterday",
-        body =
-          if (deals.size > maxCount) {
-            "$dealsDescription\n\n +${deals.size - maxCount} more..."
-          } else {
-            dealsDescription
-          },
+        body = if (deals.size > maxCount) {
+          "$dealsDescription\n\n +${deals.size - maxCount} more..."
+        } else {
+          dealsDescription
+        },
       )
     } else {
-      logger.infoNotify("$SIMPLE_NAME:: haven't got any deals since $lastTimestamp")
+      infoNotify("$SIMPLE_NAME:: haven't got any deals since $lastTimestamp")
     }
 
     keyValueRepository.set(LAST_SUMMARY_TIMESTAMP, OffsetDateTime.now().toString())

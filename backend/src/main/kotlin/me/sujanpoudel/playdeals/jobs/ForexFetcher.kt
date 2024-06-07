@@ -62,31 +62,28 @@ class ForexFetcher(
   private suspend fun getForexRates(): ForexRate {
     val currencies = loadCurrencies()
 
-    val response =
-      webClient.get("/v1/latest?access_key=${conf.forexApiKey}&format=1&base=EUR")
-        .send()
-        .coAwait()
-        .bodyAsString()
-        .let {
-          Json.decodeValue(it) as io.vertx.core.json.JsonObject
-        }
+    val response = webClient.get("/v1/latest?access_key=${conf.forexApiKey}&format=1&base=EUR")
+      .send()
+      .coAwait()
+      .bodyAsString()
+      .let {
+        Json.decodeValue(it) as io.vertx.core.json.JsonObject
+      }
 
     val epochSeconds = response.getLong("timestamp")
     val usdRate = response.getJsonObject("rates").getNumber("USD").toFloat()
 
     return ForexRate(
       timestamp = OffsetDateTime.ofInstant(java.time.Instant.ofEpochSecond(epochSeconds), ZoneOffset.UTC),
-      rates =
-        response.getJsonObject("rates").map {
-          val currency = currencies[it.key]
-
-          ConversionRate(
-            currency = it.key,
-            symbol = currency?.symbol ?: "$",
-            name = currency?.name ?: it.key,
-            rate = (it.value as Number).toFloat() / usdRate,
-          )
-        },
+      rates = response.getJsonObject("rates").map {
+        val currency = currencies[it.key]
+        ConversionRate(
+          currency = it.key,
+          symbol = currency?.symbol ?: "$",
+          name = currency?.name ?: it.key,
+          rate = (it.value as Number).toFloat() / usdRate,
+        )
+      },
     )
   }
 
