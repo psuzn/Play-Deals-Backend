@@ -36,6 +36,7 @@ import org.flywaydb.core.Flyway
 import org.jobrunr.configuration.JobRunr
 import org.jobrunr.configuration.JobRunrConfiguration
 import org.jobrunr.dashboard.JobRunrDashboardWebServerConfiguration
+import org.jobrunr.jobs.filters.RetryFilter
 import org.jobrunr.server.BackgroundJobServerConfiguration
 import org.jobrunr.server.JobActivator
 import org.jobrunr.storage.StorageProvider
@@ -119,6 +120,7 @@ fun configureDI(vertx: Vertx, conf: Conf) = DI {
   bindSingleton {
     JobRunr.configure()
       .useStorageProvider(instance())
+      .withJobFilter(RetryFilter(2))
       .useDashboardIf(
         conf.backgroundTask.dashboardEnabled,
         JobRunrDashboardWebServerConfiguration
