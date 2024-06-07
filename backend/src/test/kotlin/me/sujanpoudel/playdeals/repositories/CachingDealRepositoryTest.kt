@@ -17,7 +17,6 @@ import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 
 class CachingDealRepositoryTest(vertx: Vertx) : IntegrationTest(vertx) {
-
   private lateinit var persistentDealRepository: PersistentDealRepository
 
   private lateinit var repository: CachingDealRepository

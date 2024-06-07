@@ -5,9 +5,10 @@ import kotlin.time.DurationUnit
 import kotlin.time.measureTimedValue
 
 inline fun <T> loggingExecutionTime(message: String, action: () -> T): T {
-  val timedValue = measureTimedValue {
-    action.invoke()
-  }
+  val timedValue =
+    measureTimedValue {
+      action.invoke()
+    }
   logger.info("$message (took ${timedValue.duration.toString(DurationUnit.MILLISECONDS)})")
   return timedValue.value
 }

@@ -11,9 +11,8 @@ import org.kodein.di.direct
 import org.kodein.di.instance
 
 class BackgroundJobsVerticle(
-  override val di: DI
+  override val di: DI,
 ) : CoroutineVerticle(), DIAware {
-
   private val jobRequestScheduler by instance<JobRequestScheduler>()
   private val keyValuesRepository by instance<KeyValuesRepository>()
 

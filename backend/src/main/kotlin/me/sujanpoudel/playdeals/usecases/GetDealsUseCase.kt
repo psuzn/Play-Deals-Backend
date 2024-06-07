@@ -6,9 +6,8 @@ import org.kodein.di.DI
 import org.kodein.di.instance
 
 class GetDealsUseCase(
-  di: DI
+  di: DI,
 ) : UseCase<GetDealsUseCase.Input, List<DealEntity>> {
-
   private val appDealsRepository by di.instance<DealRepository>()
 
   class Input(val skip: Int, val take: Int)

@@ -17,14 +17,14 @@ import java.util.UUID
 class AndroidAppExpiryCheckScheduler(
   private val repository: DealRepository,
   private val requestScheduler: JobRequestScheduler,
-  private val storageProvider: StorageProvider
+  private val storageProvider: StorageProvider,
 ) : CoJobRequestHandler<AndroidAppExpiryCheckScheduler.Request>() {
-
   override suspend fun handleRequest(jobRequest: Request): Unit = loggingExecutionTime(
-    "$SIMPLE_NAME:: handleRequest"
+    "$SIMPLE_NAME:: handleRequest",
   ) {
-    val apps = repository.getPotentiallyExpiredDeals().stream()
-      .map { AppDetailScrapper.Request(it.id) }
+    val apps =
+      repository.getPotentiallyExpiredDeals().stream()
+        .map { AppDetailScrapper.Request(it.id) }
 
     requestScheduler.enqueue(apps)
 
@@ -38,6 +38,7 @@ class AndroidAppExpiryCheckScheduler(
 
     companion object {
       private val JOB_ID: UUID = UUID.nameUUIDFromBytes("AppExpiryCheckScheduler".toByteArray())
+
       operator fun invoke(): RecurringJobBuilder = RecurringJobBuilder.aRecurringJob()
         .withJobRequest(Request())
         .withName("App Expiry Checker")

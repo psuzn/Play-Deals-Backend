@@ -2,8 +2,9 @@ import com.github.jengelman.gradle.plugins.shadow.tasks.ShadowJar
 
 plugins {
   application
-  id("com.github.johnrengelman.shadow") version Versions.SHADOW
-  id("com.google.cloud.tools.jib") version "3.3.2"
+  alias(libs.plugins.kotlinJvm)
+  alias(libs.plugins.jib)
+  alias(libs.plugins.shadow)
 }
 
 group = Artifact.GROUP
@@ -37,51 +38,50 @@ jib {
 
 dependencies {
   implementation(kotlin("stdlib"))
-  implementation("org.jetbrains.kotlinx:kotlinx-coroutines-core:${Versions.COROUTINES}")
+  implementation(libs.kotlinx.coroutines.core)
 
-  implementation(platform("io.vertx:vertx-stack-depchain:${Versions.VERTX}"))
-  "io.vertx".let { vertx ->
-    implementation("$vertx:vertx-core")
-    implementation("$vertx:vertx-web-graphql")
-    implementation("$vertx:vertx-auth-jwt")
-    implementation("$vertx:vertx-sql-client-templates")
-    implementation("$vertx:vertx-web")
-    implementation("$vertx:vertx-pg-client")
-    implementation("$vertx:vertx-lang-kotlin-coroutines")
-    implementation("$vertx:vertx-lang-kotlin")
-    implementation("$vertx:vertx-health-check")
-    implementation("$vertx:vertx-web-client")
+  implementation(platform(libs.vertx.depchain))
 
-    testImplementation("$vertx:vertx-junit5")
+  with(libs.vertx) {
+    implementation(core)
+    implementation(web)
+    implementation(pgClient)
+    implementation(coroutines)
+    implementation(kotlin)
+    implementation(healthCheck)
+    implementation(webClient)
+
+    testImplementation(junit5)
   }
 
-  implementation("com.michael-bull.kotlin-result:kotlin-result:${Versions.KOTLIN_RESULT}")
+  implementation(libs.kotlinResult)
 
-  implementation("org.flywaydb:flyway-core:${Versions.FLYWAY}")
-  implementation("org.postgresql:postgresql:${Versions.POSTGRES}")
-  implementation("com.ongres.scram:client:${Versions.ONGRESS_SCARM}")
+  implementation(libs.flyway.core)
+  implementation(libs.flyway.postgresql)
+  implementation(libs.postgresql)
+  implementation(libs.scramOngressClient)
 
-  implementation("org.slf4j:slf4j-api:${Versions.SLF4J}")
-  implementation("org.slf4j:slf4j-simple:${Versions.SLF4J}")
-  implementation("io.github.microutils:kotlin-logging-jvm:${Versions.JVM_LOGGER}")
+  implementation(libs.slf4j.api)
+  implementation(libs.slf4j.simpe)
+  implementation(libs.kotlinLoggingJvm)
 
-  implementation("com.fasterxml.jackson.core:jackson-databind:${Versions.JACKSON}")
-  implementation("com.fasterxml.jackson.module:jackson-module-kotlin:${Versions.JACKSON}")
-  implementation("com.fasterxml.jackson.datatype:jackson-datatype-jsr310:${Versions.JACKSON}")
+  implementation(libs.jackson.databind)
+  implementation(libs.jackson.moduleKotlin)
+  implementation(libs.jackson.datatype.jsr310)
 
-  implementation("org.kodein.di:kodein-di:${Versions.KODEIN_DI}")
+  implementation(libs.kodein)
+  implementation(libs.jobrunr)
+  implementation(libs.jobrunr.kotlin)
+  implementation(libs.firebaseAdmin)
 
-  implementation("org.jobrunr:jobrunr:${Versions.JOB_RUNNER}")
-  implementation("org.jobrunr:jobrunr-kotlin-1.8-support:${Versions.JOB_RUNNER}")
-  implementation("com.google.firebase:firebase-admin:9.2.0")
+  testImplementation(libs.junit.jupiter)
+  testImplementation(libs.kotest.assertions.core)
+  testImplementation(libs.mockk)
 
-  testImplementation("org.junit.jupiter:junit-jupiter:${Versions.JUNIT_JUPITER}")
-  testImplementation("io.kotest:kotest-assertions-core:${Versions.KO_TEST}")
-  testImplementation("io.mockk:mockk:${Versions.MOCKK}")
-  with("org.testcontainers") {
-    testImplementation("$this:testcontainers:${Versions.TEST_CONTAINERS}")
-    testImplementation("$this:junit-jupiter:${Versions.TEST_CONTAINERS}")
-    testImplementation("$this:postgresql:${Versions.TEST_CONTAINERS}")
+  with(libs.testcontainers) {
+    testImplementation(this)
+    testImplementation(junit)
+    testImplementation(postgresql)
   }
 }
 
@@ -95,13 +95,14 @@ tasks.withType<ShadowJar> {
 }
 
 tasks.withType<JavaExec> {
-  args = listOf(
-    "run",
-    mainVerticleName,
-    "--redeploy=$watchForChange",
-    "--launcher-class=$launcherClassName",
-    "--on-redeploy=$doOnChange"
-  )
+  args =
+    listOf(
+      "run",
+      mainVerticleName,
+      "--redeploy=$watchForChange",
+      "--launcher-class=$launcherClassName",
+      "--on-redeploy=$doOnChange",
+    )
 }
 
 tasks.test {

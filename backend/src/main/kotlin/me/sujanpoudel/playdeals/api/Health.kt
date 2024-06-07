@@ -12,10 +12,7 @@ import me.sujanpoudel.playdeals.usecases.DBHealthUseCase
 import org.kodein.di.DirectDI
 import org.kodein.di.instance
 
-fun healthApi(
-  di: DirectDI,
-  vertx: Vertx
-): Router = Router.router(vertx).apply {
+fun healthApi(di: DirectDI, vertx: Vertx): Router = Router.router(vertx).apply {
   val dbHealthChecker = di.instance<DBHealthUseCase>()
 
   val livenessHandler = HealthCheckHandler.create(vertx)

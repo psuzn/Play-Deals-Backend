@@ -7,7 +7,7 @@ import io.vertx.core.json.JsonObject
 import io.vertx.ext.web.client.WebClient
 import io.vertx.ext.web.client.WebClientOptions
 import io.vertx.kotlin.core.json.jsonObjectOf
-import io.vertx.kotlin.coroutines.await
+import io.vertx.kotlin.coroutines.coAwait
 import me.sujanpoudel.playdeals.Constants
 import me.sujanpoudel.playdeals.common.SIMPLE_NAME
 import me.sujanpoudel.playdeals.common.loggingExecutionTime
@@ -38,13 +38,12 @@ enum class Value(val root: String, vararg val path: Int) {
   CURRENCY("ds:5", 1, 2, 57, 0, 0, 0, 0, 1, 0, 1),
   GENRE("ds:5", 1, 2, 79, 0, 0, 0),
   SCREENSHOTS_LIST("ds:5", 1, 2, 78, 0),
-  SCREENSHOTS_URL("", 3, 2);
+  SCREENSHOTS_URL("", 3, 2),
 }
 
 class AppDetailScrapper(
-  override val di: DI
+  override val di: DI,
 ) : CoJobRequestHandler<AppDetailScrapper.Request>(), DIAware {
-
   private val jobsVerticle by instance<BackgroundJobsVerticle>()
   private val repository by instance<DealRepository>()
   private val messagingService by instance<MessagingService>()
@@ -53,13 +52,14 @@ class AppDetailScrapper(
   }
 
   override suspend fun handleRequest(jobRequest: Request): Unit = loggingExecutionTime(
-    "$SIMPLE_NAME:: handleRequest ${jobRequest.packageName}"
+    "$SIMPLE_NAME:: handleRequest ${jobRequest.packageName}",
   ) {
     val packageName = jobRequest.packageName
 
-    val app = loggingExecutionTime("$SIMPLE_NAME:: scrapping app details $packageName") {
-      getAppDetail(packageName)
-    }
+    val app =
+      loggingExecutionTime("$SIMPLE_NAME:: scrapping app details $packageName") {
+        getAppDetail(packageName)
+      }
 
     when {
       app.normalPrice == 0f -> {
@@ -82,26 +82,29 @@ class AppDetailScrapper(
   }
 
   private suspend fun getAppDetail(packageName: String): AndroidAppDetail {
-    val response = webClient.get("/store/apps/details?id=$packageName&hl=en&gl=us")
-      .send()
-      .await()
+    val response =
+      webClient.get("/store/apps/details?id=$packageName&hl=en&gl=us")
+        .send()
+        .coAwait()
 
     val body = response.bodyAsString()
 
-    val mapper = ObjectMapper().apply {
-      configure(JsonParser.Feature.ALLOW_SINGLE_QUOTES, true)
-      configure(JsonParser.Feature.ALLOW_UNQUOTED_FIELD_NAMES, true)
-    }
-
-    val matches = INIT_DATA_PATTERN.matcher(body).let {
-      val snippets = mutableListOf<String>()
-      while (it.find()) {
-        snippets.add(it.group(1))
+    val mapper =
+      ObjectMapper().apply {
+        configure(JsonParser.Feature.ALLOW_SINGLE_QUOTES, true)
+        configure(JsonParser.Feature.ALLOW_UNQUOTED_FIELD_NAMES, true)
       }
-      snippets
-    }.map {
-      io.vertx.core.json.Json.decodeValue(mapper.readTree(it).toPrettyString()) as JsonObject
-    }
+
+    val matches =
+      INIT_DATA_PATTERN.matcher(body).let {
+        val snippets = mutableListOf<String>()
+        while (it.find()) {
+          snippets.add(it.group(1))
+        }
+        snippets
+      }.map {
+        io.vertx.core.json.Json.decodeValue(mapper.readTree(it).toPrettyString()) as JsonObject
+      }
 
     val combined = jsonObjectOf()
 
@@ -116,9 +119,10 @@ class AppDetailScrapper(
       id = packageName,
       name = combined.getValue(Value.TITLE),
       icon = combined.getValue(Value.ICON),
-      images = (combined.getValue(Value.SCREENSHOTS_LIST) as JsonArray).mapNotNull {
-        getValue(it as JsonArray, Value.SCREENSHOTS_URL.path.toTypedArray()) as? String
-      },
+      images =
+        (combined.getValue(Value.SCREENSHOTS_LIST) as JsonArray).mapNotNull {
+          getValue(it as JsonArray, Value.SCREENSHOTS_URL.path.toTypedArray()) as? String
+        },
       normalPrice = normalPrice,
       currency = combined.getValue(Value.CURRENCY) as String,
       currentPrice = currentPrice,
@@ -126,10 +130,11 @@ class AppDetailScrapper(
       downloads = combined.getValue(Value.INSTALLS),
       storeUrl = "https://play.google.com/store/apps/details?id=$packageName",
       category = combined.getValue(Value.GENRE) as String,
-      offerExpiresIn = combined.getValueOrNull<Int>(Value.OFFER_END_TIME)?.let {
-        OffsetDateTime.ofInstant(Instant.ofEpochSecond(it.toLong()), ZoneOffset.UTC)
-      },
-      source = Constants.DealSources.APP_DEAL_SUBREDDIT
+      offerExpiresIn =
+        combined.getValueOrNull<Int>(Value.OFFER_END_TIME)?.let {
+          OffsetDateTime.ofInstant(Instant.ofEpochSecond(it.toLong()), ZoneOffset.UTC)
+        },
+      source = Constants.DealSources.APP_DEAL_SUBREDDIT,
     )
   }
 

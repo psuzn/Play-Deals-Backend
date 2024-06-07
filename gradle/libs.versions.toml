@@ -1,0 +1,88 @@
+[versions]
+
+## artifacts
+android-compileSdk = "34"
+android-minSdk = "29"
+android-targetSdk = "34"
+
+## plugins
+kotlin = "2.0.0"
+shadow = "7.1.2"
+jib = "3.4.3"
+klint-plugin = "12.0.3"
+
+## Libraries
+kotlinx-coroutines-core = "1.8.1"
+vertx = "4.5.8"
+jackson = "2.17.1"
+flyway = "10.14.0"
+postgresql = "42.7.3"
+ongress-scram = "2.1"
+firebase-admin = "9.3.0"
+
+kotlin-result = "2.0.0"
+kodein = "7.22.0"
+slfj4 = "2.0.13"
+jvm-logger = "3.0.5"
+
+job-runner = "7.2.0"
+
+ktlint = "1.2.1"
+
+## testing
+junit-jupiter = "5.10.2"
+kotest = "5.9.1"
+test-container = "1.19.8"
+mockk = "1.13.11"
+
+[libraries]
+kotlinx-coroutines-core = { module = "org.jetbrains.kotlinx:kotlinx-coroutines-core", version.ref = "kotlinx-coroutines-core" }
+kotlinx-stdlib = { module = "org.jetbrains.kotlin:kotlin-stdlib", version.ref = "kotlin" }
+
+vertx-depchain = { module = "io.vertx:vertx-stack-depchain", version.ref = "vertx" }
+vertx-core = { module = "io.vertx:vertx-core" }
+vertx-web = { module = "io.vertx:vertx-web" }
+vertx-pgClient = { module = "io.vertx:vertx-pg-client" }
+vertx-coroutines = { module = "io.vertx:vertx-lang-kotlin-coroutines" }
+vertx-kotlin = { module = "io.vertx:vertx-lang-kotlin" }
+vertx-healthCheck = { module = "io.vertx:vertx-health-check" }
+vertx-webClient = { module = "io.vertx:vertx-web-client" }
+vertx-junit5 = { module = "io.vertx:vertx-junit5" }
+
+kotlinResult = { module = "com.michael-bull.kotlin-result:kotlin-result", version.ref = "kotlin-result" }
+
+flyway-core = { module = "org.flywaydb:flyway-core", version.ref = "flyway" }
+flyway-postgresql = { module = "org.flywaydb:flyway-database-postgresql", version.ref = "flyway" }
+postgresql = { module = "org.postgresql:postgresql", version.ref = "postgresql" }
+scramOngressClient = { module = "com.ongres.scram:client", version.ref = "ongress-scram" }
+
+slf4j-api = { module = "org.slf4j:slf4j-api", version.ref = "slfj4" }
+slf4j-simpe = { module = "org.slf4j:slf4j-simple", version.ref = "slfj4" }
+kotlinLoggingJvm = { module = "io.github.microutils:kotlin-logging-jvm", version.ref = "jvm-logger" }
+
+jackson-databind = { module = "com.fasterxml.jackson.core:jackson-databind", version.ref = "jackson" }
+jackson-moduleKotlin = { module = "com.fasterxml.jackson.module:jackson-module-kotlin", version.ref = "jackson" }
+jackson-datatype-jsr310 = { module = "com.fasterxml.jackson.datatype:jackson-datatype-jsr310", version.ref = "jackson" }
+
+kodein = { module = "org.kodein.di:kodein-di", version.ref = "kodein" }
+
+jobrunr = { module = "org.jobrunr:jobrunr", version.ref = "job-runner" }
+jobrunr-kotlin = { module = "org.jobrunr:jobrunr-kotlin-1.8-support", version.ref = "job-runner" }
+
+firebaseAdmin = { module = "com.google.firebase:firebase-admin", version.ref = "firebase-admin" }
+
+## Testing
+junit-jupiter = { module = "org.junit.jupiter:junit-jupiter", version.ref = "junit-jupiter" }
+kotest-assertions-core = { module = "io.kotest:kotest-assertions-core", version.ref = "kotest" }
+mockk = { module = "io.mockk:mockk", version.ref = "mockk" }
+
+testcontainers = { module = "org.testcontainers:testcontainers", version.ref = "test-container" }
+testcontainers-junit = { module = "org.testcontainers:junit-jupiter", version.ref = "test-container" }
+testcontainers-postgresql = { module = "org.testcontainers:postgresql", version.ref = "test-container" }
+
+[plugins]
+kotlinJvm = { id = "org.jetbrains.kotlin.jvm", version.ref = "kotlin" }
+ktlint = { id = "org.jlleitschuh.gradle.ktlint", version.ref = "klint-plugin" }
+shadow = { id = "com.github.johnrengelman.shadow", version.ref = "shadow" }
+jib = { id = "com.google.cloud.tools.jib", version.ref = "jib" }
+

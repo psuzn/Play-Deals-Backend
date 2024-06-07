@@ -1,6 +1,6 @@
 package me.sujanpoudel.playdeals.repositories.persistent
 
-import io.vertx.kotlin.coroutines.await
+import io.vertx.kotlin.coroutines.coAwait
 import io.vertx.sqlclient.SqlClient
 import me.sujanpoudel.playdeals.common.exec
 import me.sujanpoudel.playdeals.domain.NewDeal
@@ -11,15 +11,15 @@ import me.sujanpoudel.playdeals.repositories.DealRepository
 import java.time.OffsetDateTime
 
 class PersistentDealRepository(
-  private val sqlClient: SqlClient
+  private val sqlClient: SqlClient,
 ) : DealRepository {
   override suspend fun getAll(skip: Int, take: Int): List<DealEntity> {
     return sqlClient.preparedQuery(
       """
       SELECT * FROM "deal" ORDER BY created_at DESC OFFSET $1 LIMIT $2
-      """.trimIndent()
+      """.trimIndent(),
     ).exec(skip, take)
-      .await()
+      .coAwait()
       .map { it.asAppDeal() }
   }
 
@@ -43,9 +43,9 @@ class PersistentDealRepository(
         type             = $13,
         source           = $14
       RETURNING *
-      """.trimIndent()
+      """.trimIndent(),
     ).exec(*appDeal.insertValues)
-      .await()
+      .coAwait()
       .first()
       .asAppDeal()
   }
@@ -54,9 +54,9 @@ class PersistentDealRepository(
     return sqlClient.preparedQuery(
       """
       DELETE from "deal" where id=$1 RETURNING *
-      """.trimIndent()
+      """.trimIndent(),
     ).exec(id)
-      .await()
+      .coAwait()
       .firstOrNull()?.asAppDeal()
   }
 
@@ -64,9 +64,9 @@ class PersistentDealRepository(
     return sqlClient.preparedQuery(
       """
       SELECT * FROM "deal" where offer_expires_in < current_timestamp
-      """.trimIndent()
+      """.trimIndent(),
     ).exec()
-      .await()
+      .coAwait()
       .map { it.asAppDeal() }
   }
 
@@ -74,9 +74,9 @@ class PersistentDealRepository(
     return sqlClient.preparedQuery(
       """
       SELECT *  FROM "deal" where created_at > $1
-      """.trimIndent()
+      """.trimIndent(),
     ).exec(since)
-      .await()
+      .coAwait()
       .map { it.asAppDeal() }
   }
 
@@ -84,9 +84,9 @@ class PersistentDealRepository(
     return sqlClient.preparedQuery(
       """
       SELECT *  FROM "deal" where id = $1
-      """.trimIndent()
+      """.trimIndent(),
     ).exec(packageName)
-      .await()
+      .coAwait()
       .firstOrNull()?.asAppDeal()
   }
 }

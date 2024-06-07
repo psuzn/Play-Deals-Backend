@@ -2,7 +2,7 @@ package me.sujanpoudel.playdeals.repositories
 
 import io.kotest.matchers.shouldBe
 import io.vertx.core.Vertx
-import io.vertx.kotlin.coroutines.await
+import io.vertx.kotlin.coroutines.coAwait
 import io.vertx.sqlclient.SqlClient
 import me.sujanpoudel.playdeals.IntegrationTest
 import me.sujanpoudel.playdeals.common.exec
@@ -12,7 +12,6 @@ import org.junit.jupiter.api.Test
 import java.time.OffsetDateTime
 
 class PersistentKeyValueRepositoryTest(vertx: Vertx) : IntegrationTest(vertx) {
-
   private val repository by lazy { di.get<KeyValuesRepository>() }
   private val sqlClient by lazy { di.get<SqlClient>() }
 
@@ -20,11 +19,12 @@ class PersistentKeyValueRepositoryTest(vertx: Vertx) : IntegrationTest(vertx) {
   fun `should create new entry on db`() = runTest {
     val value = repository.set(KEY, "test")
 
-    val valueFromDb = sqlClient.preparedQuery(""" SELECT * from "key_value_store" where key=$1""")
-      .exec(KEY)
-      .await()
-      .first()
-      .getString("value")
+    val valueFromDb =
+      sqlClient.preparedQuery(""" SELECT * from "key_value_store" where key=$1""")
+        .exec(KEY)
+        .coAwait()
+        .first()
+        .getString("value")
 
     value shouldBe valueFromDb
   }
@@ -35,11 +35,12 @@ class PersistentKeyValueRepositoryTest(vertx: Vertx) : IntegrationTest(vertx) {
 
     val updated = repository.set(KEY, "test1")
 
-    val fromDb = sqlClient.preparedQuery(""" SELECT * from "key_value_store" where key=$1""")
-      .exec(KEY)
-      .await()
-      .first()
-      .value()
+    val fromDb =
+      sqlClient.preparedQuery(""" SELECT * from "key_value_store" where key=$1""")
+        .exec(KEY)
+        .coAwait()
+        .first()
+        .value()
 
     fromDb shouldBe updated
   }

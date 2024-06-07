@@ -12,8 +12,8 @@ import com.google.firebase.messaging.FirebaseMessaging
 import io.vertx.core.Vertx
 import io.vertx.core.eventbus.DeliveryOptions
 import io.vertx.core.json.jackson.DatabindCodec
+import io.vertx.pgclient.PgBuilder
 import io.vertx.pgclient.PgConnectOptions
-import io.vertx.pgclient.PgPool
 import io.vertx.sqlclient.PoolOptions
 import me.sujanpoudel.playdeals.api.ApiVerticle
 import me.sujanpoudel.playdeals.jobs.AndroidAppExpiryCheckScheduler
@@ -50,10 +50,7 @@ import java.time.Duration
 
 inline fun <reified T : Any> DI.get(tag: String? = null) = direct.instance<T>(tag)
 
-fun configureDI(
-  vertx: Vertx,
-  conf: Conf
-) = DI {
+fun configureDI(vertx: Vertx, conf: Conf) = DI {
   bindSingleton { conf }
 
   bindSingleton { ApiVerticle(di = this) }
@@ -67,7 +64,7 @@ fun configureDI(
     MainVerticle(
       apiVerticle = instance(),
       backgroundJobsVerticle = instance(),
-      flywayVerticle = instance()
+      flywayVerticle = instance(),
     )
   }
 
@@ -93,11 +90,12 @@ fun configureDI(
   }
 
   bindSingleton {
-    PgPool.client(vertx, instance<PgConnectOptions>(), PoolOptions().setMaxSize(conf.db.poolSize))
-  }
-
-  bindSingleton {
-    PgPool.pool(vertx, instance<PgConnectOptions>(), PoolOptions())
+    PgBuilder
+      .client()
+      .using(vertx)
+      .connectingTo(instance<PgConnectOptions>())
+      .with(PoolOptions().setMaxSize(conf.db.poolSize))
+      .build()
   }
 
   bindSingleton<JobActivator> {
@@ -114,7 +112,7 @@ fun configureDI(
         setURL("jdbc:postgresql://${conf.db.host}:${conf.db.port}/${conf.db.name}?currentSchema=job_runr")
         user = conf.db.username
         password = conf.db.password
-      }
+      },
     )
   }
 
@@ -125,15 +123,15 @@ fun configureDI(
         conf.backgroundTask.dashboardEnabled,
         JobRunrDashboardWebServerConfiguration
           .usingStandardDashboardConfiguration()
-          .andBasicAuthentication(conf.backgroundTask.dashboardUserName, conf.backgroundTask.dashboardPassword)
+          .andBasicAuthentication(conf.backgroundTask.dashboardUserName, conf.backgroundTask.dashboardPassword),
       )
       .useJobActivator(instance())
       .useBackgroundJobServer(
         BackgroundJobServerConfiguration.usingStandardBackgroundJobServerConfiguration()
           .andDeleteSucceededJobsAfter(Duration.ofMinutes(10))
           .andPermanentlyDeleteDeletedJobsAfter(Duration.ofMinutes(10))
-          .andWorkerCount(1)
-          .andPollIntervalInSeconds(10)
+          .andWorkerCount(2)
+          .andPollIntervalInSeconds(10),
       )
       .initialize()
   }
@@ -157,13 +155,13 @@ fun configureDI(
     AndroidAppExpiryCheckScheduler(
       repository = instance(),
       requestScheduler = instance(),
-      storageProvider = instance()
+      storageProvider = instance(),
     )
   }
   bindSingleton {
     ForexFetcher(
       di = di,
-      conf = instance()
+      conf = instance(),
     )
   }
 
