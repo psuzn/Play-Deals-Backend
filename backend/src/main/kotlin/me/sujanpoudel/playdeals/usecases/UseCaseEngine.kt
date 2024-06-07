@@ -29,15 +29,14 @@ suspend fun <Request, Input, Output> RoutingContext.executeUseCase(
   toInput: (Request) -> Input,
   onError: (Throwable) -> Unit = this::handleExceptions,
   onSuccess: (Output) -> Unit,
-): Result<Output, Throwable> =
-  runCatching { toContext.invoke() }
-    .andThen {
-      runCatching {
-        (it as? Validated)?.validate()
-        it
-      }
+): Result<Output, Throwable> = runCatching { toContext.invoke() }
+  .andThen {
+    runCatching {
+      (it as? Validated)?.validate()
+      it
     }
-    .andThen { runCatching { toInput.invoke(it) } }
-    .andThen { runCatching { useCase.execute(it) } }
-    .onSuccess(onSuccess)
-    .onFailure(onError)
+  }
+  .andThen { runCatching { toInput.invoke(it) } }
+  .andThen { runCatching { useCase.execute(it) } }
+  .onSuccess(onSuccess)
+  .onFailure(onError)

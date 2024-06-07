@@ -16,48 +16,45 @@ class PersistentKeyValueRepositoryTest(vertx: Vertx) : IntegrationTest(vertx) {
   private val sqlClient by lazy { di.get<SqlClient>() }
 
   @Test
-  fun `should create new entry on db`() =
-    runTest {
-      val value = repository.set(KEY, "test")
+  fun `should create new entry on db`() = runTest {
+    val value = repository.set(KEY, "test")
 
-      val valueFromDb =
-        sqlClient.preparedQuery(""" SELECT * from "key_value_store" where key=$1""")
-          .exec(KEY)
-          .coAwait()
-          .first()
-          .getString("value")
+    val valueFromDb =
+      sqlClient.preparedQuery(""" SELECT * from "key_value_store" where key=$1""")
+        .exec(KEY)
+        .coAwait()
+        .first()
+        .getString("value")
 
-      value shouldBe valueFromDb
-    }
-
-  @Test
-  fun `should perform update if item with id already exists`() =
-    runTest {
-      repository.set(KEY, "test")
-
-      val updated = repository.set(KEY, "test1")
-
-      val fromDb =
-        sqlClient.preparedQuery(""" SELECT * from "key_value_store" where key=$1""")
-          .exec(KEY)
-          .coAwait()
-          .first()
-          .value()
-
-      fromDb shouldBe updated
-    }
+    value shouldBe valueFromDb
+  }
 
   @Test
-  fun `should be able to serialize unknown types`() =
-    runTest {
-      val value = OffsetDateTime.now()
+  fun `should perform update if item with id already exists`() = runTest {
+    repository.set(KEY, "test")
 
-      repository.set(KEY, value.toString())
+    val updated = repository.set(KEY, "test1")
 
-      val fromDb = repository.get(KEY).let(OffsetDateTime::parse)
+    val fromDb =
+      sqlClient.preparedQuery(""" SELECT * from "key_value_store" where key=$1""")
+        .exec(KEY)
+        .coAwait()
+        .first()
+        .value()
 
-      fromDb shouldBe value
-    }
+    fromDb shouldBe updated
+  }
+
+  @Test
+  fun `should be able to serialize unknown types`() = runTest {
+    val value = OffsetDateTime.now()
+
+    repository.set(KEY, value.toString())
+
+    val fromDb = repository.get(KEY).let(OffsetDateTime::parse)
+
+    fromDb shouldBe value
+  }
 
   companion object {
     const val KEY = "test_key"

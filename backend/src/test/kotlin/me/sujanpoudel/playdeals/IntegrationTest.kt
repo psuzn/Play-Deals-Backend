@@ -65,21 +65,19 @@ abstract class IntegrationTest(private val vertx: Vertx) {
 
   var di = configureDI(vertx, conf)
 
-  protected fun runTest(block: suspend () -> Unit): Unit =
-    runBlocking(vertx.dispatcher()) {
-      di.direct.instance<ObjectMapper>()
-      try {
-        block()
-      } catch (e: Exception) {
-        e.printStackTrace()
-        throw e
-      }
+  protected fun runTest(block: suspend () -> Unit): Unit = runBlocking(vertx.dispatcher()) {
+    di.direct.instance<ObjectMapper>()
+    try {
+      block()
+    } catch (e: Exception) {
+      e.printStackTrace()
+      throw e
     }
+  }
 
-  private fun deployVerticle(): String =
-    runBlocking(vertx.dispatcher()) {
-      vertx.deployVerticle(di.direct.instance<MainVerticle>()).coAwait()
-    }
+  private fun deployVerticle(): String = runBlocking(vertx.dispatcher()) {
+    vertx.deployVerticle(di.direct.instance<MainVerticle>()).coAwait()
+  }
 
   @BeforeEach
   fun assignDeploymentId() {
@@ -98,11 +96,10 @@ abstract class IntegrationTest(private val vertx: Vertx) {
   }
 
   @AfterEach
-  fun undeployVerticle() =
-    runBlocking(vertx.dispatcher()) {
-      vertx.undeploy(deploymentId).coAwait()
-      log.info { "un-deployed deployment id $deploymentId" }
-    }
+  fun undeployVerticle() = runBlocking(vertx.dispatcher()) {
+    vertx.undeploy(deploymentId).coAwait()
+    log.info { "un-deployed deployment id $deploymentId" }
+  }
 
   companion object {
     @JvmStatic

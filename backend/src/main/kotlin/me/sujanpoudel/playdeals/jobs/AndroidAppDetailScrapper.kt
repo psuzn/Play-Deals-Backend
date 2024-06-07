@@ -51,36 +51,35 @@ class AppDetailScrapper(
     WebClient.create(jobsVerticle.vertx, WebClientOptions().setDefaultHost("play.google.com"))
   }
 
-  override suspend fun handleRequest(jobRequest: Request): Unit =
-    loggingExecutionTime(
-      "$SIMPLE_NAME:: handleRequest ${jobRequest.packageName}",
-    ) {
-      val packageName = jobRequest.packageName
+  override suspend fun handleRequest(jobRequest: Request): Unit = loggingExecutionTime(
+    "$SIMPLE_NAME:: handleRequest ${jobRequest.packageName}",
+  ) {
+    val packageName = jobRequest.packageName
 
-      val app =
-        loggingExecutionTime("$SIMPLE_NAME:: scrapping app details $packageName") {
-          getAppDetail(packageName)
-        }
+    val app =
+      loggingExecutionTime("$SIMPLE_NAME:: scrapping app details $packageName") {
+        getAppDetail(packageName)
+      }
 
-      when {
-        app.normalPrice == 0f -> {
-          logger.infoNotify("App $packageName(${app.name}) doesn't have any price")
-          repository.delete(packageName)
-        }
+    when {
+      app.normalPrice == 0f -> {
+        logger.infoNotify("App $packageName(${app.name}) doesn't have any price")
+        repository.delete(packageName)
+      }
 
-        app.normalPrice == app.currentPrice -> {
-          logger.infoNotify("App $packageName(${app.name}) deals has been expired")
-          repository.delete(packageName)
-        }
+      app.normalPrice == app.currentPrice -> {
+        logger.infoNotify("App $packageName(${app.name}) deals has been expired")
+        repository.delete(packageName)
+      }
 
-        (app.currentPrice ?: 0f) < app.normalPrice -> {
-          logger.info("Found deal for $packageName(${app.name}) ${app.currentPrice} ${app.currency}(${app.normalPrice} ${app.currency})")
-          repository.upsert(app.asNewDeal()).also {
-            messagingService.sendMessageForNewDeal(it)
-          }
+      (app.currentPrice ?: 0f) < app.normalPrice -> {
+        logger.info("Found deal for $packageName(${app.name}) ${app.currentPrice} ${app.currency}(${app.normalPrice} ${app.currency})")
+        repository.upsert(app.asNewDeal()).also {
+          messagingService.sendMessageForNewDeal(it)
         }
       }
     }
+  }
 
   private suspend fun getAppDetail(packageName: String): AndroidAppDetail {
     val response =
@@ -153,10 +152,7 @@ class AppDetailScrapper(
     return getValue(getJsonArray(value.root), value.path.toTypedArray()) as T
   }
 
-  fun getValue(
-    jsonObject: JsonArray,
-    path: Array<Int>,
-  ): Any {
+  fun getValue(jsonObject: JsonArray, path: Array<Int>): Any {
     return if (path.size == 1) {
       jsonObject.getValue(path.first())
     } else {

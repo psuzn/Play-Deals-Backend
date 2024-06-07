@@ -12,22 +12,20 @@ import org.kodein.di.instance
 import kotlin.system.exitProcess
 
 private val vertx = Vertx.vertx()
-val configuration =
-  buildConf(System.getenv()).getOrThrow {
-    (it as BootstrapException).violations.forEach(::println)
-    exitProcess(-1)
-  }
+val configuration = buildConf(System.getenv()).getOrThrow {
+  (it as BootstrapException).violations.forEach(::println)
+  exitProcess(-1)
+}
 
 val primaryDI = configureDI(vertx, configuration)
 
-fun main(): Unit =
-  runBlocking {
-    primaryDI.direct.instance<ObjectMapper>()
+fun main(): Unit = runBlocking {
+  primaryDI.direct.instance<ObjectMapper>()
 
-    vertx.deployVerticle(primaryDI.direct.instance<MainVerticle>())
-      .onSuccess { logger.infoNotify("Deployed MainVerticle : $it") }
-      .onFailure {
-        logger.error(it) { "Error deploying main verticle" }
-        vertx.close()
-      }.coAwait()
-  }
+  vertx.deployVerticle(primaryDI.direct.instance<MainVerticle>())
+    .onSuccess { logger.infoNotify("Deployed MainVerticle : $it") }
+    .onFailure {
+      logger.error(it) { "Error deploying main verticle" }
+      vertx.close()
+    }.coAwait()
+}

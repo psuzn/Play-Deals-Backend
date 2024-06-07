@@ -1,6 +1,8 @@
 @file:Suppress("UnstableApiUsage")
 
 import org.gradle.api.tasks.testing.logging.TestLogEvent
+import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
+import org.jlleitschuh.gradle.ktlint.KtlintExtension
 import org.jlleitschuh.gradle.ktlint.KtlintPlugin
 
 plugins {
@@ -21,17 +23,34 @@ allprojects {
   task("preCommitHook") {
     dependsOn(tasks.ktlintCheck)
   }
+
+  extensions.configure<KtlintExtension> {
+    version = rootProject.libs.versions.ktlint.get()
+    enableExperimentalRules = false
+    coloredOutput = true
+
+    filter {
+      exclude {
+        it.file.absoluteFile.startsWith(layout.buildDirectory.asFile.get().absolutePath)
+      }
+    }
+  }
+
+  tasks.withType<KotlinCompile> {
+    compilerOptions {
+      allWarningsAsErrors.set(true)
+    }
+  }
 }
 
 tasks.withType<Test> {
   useJUnitPlatform()
   testLogging {
-    events =
-      setOf(
-        TestLogEvent.PASSED,
-        TestLogEvent.SKIPPED,
-        TestLogEvent.FAILED,
-      )
+    events = setOf(
+      TestLogEvent.PASSED,
+      TestLogEvent.SKIPPED,
+      TestLogEvent.FAILED,
+    )
   }
 }
 

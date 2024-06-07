@@ -27,14 +27,10 @@ fun Route.coHandler(fn: suspend (RoutingContext) -> Unit): Route {
 
 fun HttpServerResponse.contentType(value: String): HttpServerResponse = putHeader("Content-Type", value)
 
-fun <T> jsonResponse(
-  message: String = "Success",
-  data: T? = null,
-): JsonObject =
-  jsonObjectOf(
-    "message" to message,
-    "data" to data,
-  )
+fun <T> jsonResponse(message: String = "Success", data: T? = null): JsonObject = jsonObjectOf(
+  "message" to message,
+  "data" to data,
+)
 
 const val UNKNOWN_ERROR_MESSAGE = "Something went wrong"
 

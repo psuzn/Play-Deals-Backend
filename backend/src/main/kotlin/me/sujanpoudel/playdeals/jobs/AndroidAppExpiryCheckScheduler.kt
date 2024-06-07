@@ -19,20 +19,19 @@ class AndroidAppExpiryCheckScheduler(
   private val requestScheduler: JobRequestScheduler,
   private val storageProvider: StorageProvider,
 ) : CoJobRequestHandler<AndroidAppExpiryCheckScheduler.Request>() {
-  override suspend fun handleRequest(jobRequest: Request): Unit =
-    loggingExecutionTime(
-      "$SIMPLE_NAME:: handleRequest",
-    ) {
-      val apps =
-        repository.getPotentiallyExpiredDeals().stream()
-          .map { AppDetailScrapper.Request(it.id) }
+  override suspend fun handleRequest(jobRequest: Request): Unit = loggingExecutionTime(
+    "$SIMPLE_NAME:: handleRequest",
+  ) {
+    val apps =
+      repository.getPotentiallyExpiredDeals().stream()
+        .map { AppDetailScrapper.Request(it.id) }
 
-      requestScheduler.enqueue(apps)
+    requestScheduler.enqueue(apps)
 
-      val lastUpdatedTime = Instant.now().minus(1, ChronoUnit.HOURS)
-      val jobs = storageProvider.deleteJobsPermanently(StateName.FAILED, lastUpdatedTime)
-      logger.info("deleted FAILED `$jobs`")
-    }
+    val lastUpdatedTime = Instant.now().minus(1, ChronoUnit.HOURS)
+    val jobs = storageProvider.deleteJobsPermanently(StateName.FAILED, lastUpdatedTime)
+    logger.info("deleted FAILED `$jobs`")
+  }
 
   class Request private constructor() : JobRequest {
     override fun getJobRequestHandler() = AndroidAppExpiryCheckScheduler::class.java
@@ -40,12 +39,11 @@ class AndroidAppExpiryCheckScheduler(
     companion object {
       private val JOB_ID: UUID = UUID.nameUUIDFromBytes("AppExpiryCheckScheduler".toByteArray())
 
-      operator fun invoke(): RecurringJobBuilder =
-        RecurringJobBuilder.aRecurringJob()
-          .withJobRequest(Request())
-          .withName("App Expiry Checker")
-          .withId(JOB_ID.toString())
-          .withDuration(Duration.ofHours(6))
+      operator fun invoke(): RecurringJobBuilder = RecurringJobBuilder.aRecurringJob()
+        .withJobRequest(Request())
+        .withName("App Expiry Checker")
+        .withId(JOB_ID.toString())
+        .withDuration(Duration.ofHours(6))
     }
   }
 }

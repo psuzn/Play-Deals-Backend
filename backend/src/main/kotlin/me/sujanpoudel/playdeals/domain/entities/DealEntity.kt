@@ -29,11 +29,10 @@ data class DealEntity(
   val updatedAt: OffsetDateTime,
 )
 
-private fun String.asCurrencySymbol() =
-  when (this) {
-    "USD" -> "$"
-    else -> this
-  }
+private fun String.asCurrencySymbol() = when (this) {
+  "USD" -> "$"
+  else -> this
+}
 
 private fun Float.formatAsPrice(): String {
   val int = toInt()

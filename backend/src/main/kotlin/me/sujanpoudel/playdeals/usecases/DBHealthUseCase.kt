@@ -10,12 +10,11 @@ class DBHealthUseCase(
 ) : UseCase<Unit, Boolean> {
   private val sqlClient by di.instance<SqlClient>()
 
-  override suspend fun doExecute(input: Unit): Boolean =
-    runCatching {
-      sqlClient.preparedQuery("""SELECT 1""")
-        .execute()
-        .coAwait()
-    }.map { rs ->
-      rs.count() == 1
-    }.getOrDefault(false)
+  override suspend fun doExecute(input: Unit): Boolean = runCatching {
+    sqlClient.preparedQuery("""SELECT 1""")
+      .execute()
+      .coAwait()
+  }.map { rs ->
+    rs.count() == 1
+  }.getOrDefault(false)
 }

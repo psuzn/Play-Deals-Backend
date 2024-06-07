@@ -17,64 +17,61 @@ import java.time.ZoneOffset
 
 class GetForexApiTest(vertx: Vertx) : IntegrationTest(vertx) {
   @Test
-  fun `Key value repo should properly store the forex rate`() =
-    runTest {
-      val repository = di.get<KeyValuesRepository>()
+  fun `Key value repo should properly store the forex rate`() = runTest {
+    val repository = di.get<KeyValuesRepository>()
 
-      val forexRate =
-        ForexRate(
-          timestamp = OffsetDateTime.now().withOffsetSameInstant(ZoneOffset.UTC),
-          rates = listOf(ConversionRate("USD", "$", "US Dollar", 1.1f)),
-        )
-      repository.saveForexRate(forexRate)
+    val forexRate =
+      ForexRate(
+        timestamp = OffsetDateTime.now().withOffsetSameInstant(ZoneOffset.UTC),
+        rates = listOf(ConversionRate("USD", "$", "US Dollar", 1.1f)),
+      )
+    repository.saveForexRate(forexRate)
 
-      val savedForexRate = repository.getForexRate()
+    val savedForexRate = repository.getForexRate()
 
-      savedForexRate shouldBe forexRate
-    }
+    savedForexRate shouldBe forexRate
+  }
 
   @Test
-  fun `should return forex if there is data`() =
-    runTest {
-      val repository = di.get<KeyValuesRepository>()
+  fun `should return forex if there is data`() = runTest {
+    val repository = di.get<KeyValuesRepository>()
 
-      val forexRate =
-        ForexRate(
-          timestamp = OffsetDateTime.now().withOffsetSameInstant(ZoneOffset.UTC),
-          rates = listOf(ConversionRate("USD", "$", "US Dollar", 1.1f)),
-        )
+    val forexRate =
+      ForexRate(
+        timestamp = OffsetDateTime.now().withOffsetSameInstant(ZoneOffset.UTC),
+        rates = listOf(ConversionRate("USD", "$", "US Dollar", 1.1f)),
+      )
 
-      repository.saveForexRate(forexRate)
+    repository.saveForexRate(forexRate)
 
-      val response =
-        httpClient.get("/api/forex")
-          .send()
-          .coAwait()
-          .bodyAsJsonObject()
+    val response =
+      httpClient.get("/api/forex")
+        .send()
+        .coAwait()
+        .bodyAsJsonObject()
 
-      response.getJsonObject("data").also { data ->
-        OffsetDateTime.parse(data.getString("timestamp")) shouldBe forexRate.timestamp
-        data.getJsonArray("rates").also { rates ->
-          rates.size() shouldBe 1
-          (rates.first() as JsonObject).also { rate ->
-            rate.getString("currency") shouldBe "USD"
-            rate.getString("symbol") shouldBe "$"
-            rate.getString("name") shouldBe "US Dollar"
-            rate.getFloat("rate") shouldBe 1.1f
-          }
+    response.getJsonObject("data").also { data ->
+      OffsetDateTime.parse(data.getString("timestamp")) shouldBe forexRate.timestamp
+      data.getJsonArray("rates").also { rates ->
+        rates.size() shouldBe 1
+        (rates.first() as JsonObject).also { rate ->
+          rate.getString("currency") shouldBe "USD"
+          rate.getString("symbol") shouldBe "$"
+          rate.getString("name") shouldBe "US Dollar"
+          rate.getFloat("rate") shouldBe 1.1f
         }
       }
     }
+  }
 
   @Test
-  fun `should return null if there is no data`() =
-    runTest {
-      val response =
-        httpClient.get("/api/forex")
-          .send()
-          .coAwait()
-          .bodyAsJsonObject()
+  fun `should return null if there is no data`() = runTest {
+    val response =
+      httpClient.get("/api/forex")
+        .send()
+        .coAwait()
+        .bodyAsJsonObject()
 
-      response.getJsonObject("data") shouldBe null
-    }
+    response.getJsonObject("data") shouldBe null
+  }
 }

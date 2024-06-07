@@ -13,10 +13,7 @@ import java.time.OffsetDateTime
 class PersistentDealRepository(
   private val sqlClient: SqlClient,
 ) : DealRepository {
-  override suspend fun getAll(
-    skip: Int,
-    take: Int,
-  ): List<DealEntity> {
+  override suspend fun getAll(skip: Int, take: Int): List<DealEntity> {
     return sqlClient.preparedQuery(
       """
       SELECT * FROM "deal" ORDER BY created_at DESC OFFSET $1 LIMIT $2

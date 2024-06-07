@@ -12,31 +12,27 @@ import me.sujanpoudel.playdeals.usecases.executeUseCase
 import org.kodein.di.DirectDI
 import org.kodein.di.instance
 
-fun appDealsApi(
-  di: DirectDI,
-  vertx: Vertx,
-): Router =
-  Router.router(vertx).apply {
-    get()
-      .coHandler { ctx ->
-        ctx.executeUseCase(
-          useCase = di.instance<GetDealsUseCase>(),
-          toContext = { GetDealsContext(ctx.request().params()) },
-          toInput = { GetDealsUseCase.Input(it.skip, it.take) },
-        ) {
-          ctx.json(jsonResponse(data = it))
-        }
+fun appDealsApi(di: DirectDI, vertx: Vertx): Router = Router.router(vertx).apply {
+  get()
+    .coHandler { ctx ->
+      ctx.executeUseCase(
+        useCase = di.instance<GetDealsUseCase>(),
+        toContext = { GetDealsContext(ctx.request().params()) },
+        toInput = { GetDealsUseCase.Input(it.skip, it.take) },
+      ) {
+        ctx.json(jsonResponse(data = it))
       }
+    }
 
-    post()
-      .consumes(ContentTypes.JSON)
-      .coHandler { ctx ->
-        ctx.executeUseCase(
-          useCase = di.instance<NewDealUseCase>(),
-          toContext = { NewDealContext(ctx.request().body().coAwait().toJsonObject()) },
-          toInput = { it.packageName },
-        ) {
-          ctx.json(jsonResponse<Any>("App added for queue"))
-        }
+  post()
+    .consumes(ContentTypes.JSON)
+    .coHandler { ctx ->
+      ctx.executeUseCase(
+        useCase = di.instance<NewDealUseCase>(),
+        toContext = { NewDealContext(ctx.request().body().coAwait().toJsonObject()) },
+        toInput = { it.packageName },
+      ) {
+        ctx.json(jsonResponse<Any>("App added for queue"))
       }
-  }
+    }
+}

@@ -8,19 +8,15 @@ import me.sujanpoudel.playdeals.usecases.executeUseCase
 import org.kodein.di.DirectDI
 import org.kodein.di.instance
 
-fun forexRateApi(
-  di: DirectDI,
-  vertx: io.vertx.core.Vertx,
-): Router =
-  Router.router(vertx).apply {
-    get()
-      .coHandler { ctx ->
-        ctx.executeUseCase(
-          useCase = di.instance<GetForexUseCase>(),
-          toContext = { },
-          toInput = { },
-        ) {
-          ctx.json(jsonResponse(data = it))
-        }
+fun forexRateApi(di: DirectDI, vertx: io.vertx.core.Vertx): Router = Router.router(vertx).apply {
+  get()
+    .coHandler { ctx ->
+      ctx.executeUseCase(
+        useCase = di.instance<GetForexUseCase>(),
+        toContext = { },
+        toInput = { },
+      ) {
+        ctx.json(jsonResponse(data = it))
       }
-  }
+    }
+}

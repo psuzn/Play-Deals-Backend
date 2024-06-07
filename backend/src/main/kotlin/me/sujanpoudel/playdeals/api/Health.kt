@@ -12,34 +12,30 @@ import me.sujanpoudel.playdeals.usecases.DBHealthUseCase
 import org.kodein.di.DirectDI
 import org.kodein.di.instance
 
-fun healthApi(
-  di: DirectDI,
-  vertx: Vertx,
-): Router =
-  Router.router(vertx).apply {
-    val dbHealthChecker = di.instance<DBHealthUseCase>()
+fun healthApi(di: DirectDI, vertx: Vertx): Router = Router.router(vertx).apply {
+  val dbHealthChecker = di.instance<DBHealthUseCase>()
 
-    val livenessHandler = HealthCheckHandler.create(vertx)
-    val readinessHandler = HealthCheckHandler.create(vertx)
+  val livenessHandler = HealthCheckHandler.create(vertx)
+  val readinessHandler = HealthCheckHandler.create(vertx)
 
-    livenessHandler.register("status") { promise ->
-      promise.complete(Status.OK())
-    }
+  livenessHandler.register("status") { promise ->
+    promise.complete(Status.OK())
+  }
 
-    readinessHandler.register("status") { promise ->
-      promise.complete(Status.OK())
-    }
+  readinessHandler.register("status") { promise ->
+    promise.complete(Status.OK())
+  }
 
-    readinessHandler.register("postgres") { promise ->
-      CoroutineScope(Dispatchers.IO).launch(vertx.dispatcher()) {
-        if (dbHealthChecker.execute(Unit)) {
-          promise.complete(Status.OK())
-        } else {
-          promise.complete(Status.KO())
-        }
+  readinessHandler.register("postgres") { promise ->
+    CoroutineScope(Dispatchers.IO).launch(vertx.dispatcher()) {
+      if (dbHealthChecker.execute(Unit)) {
+        promise.complete(Status.OK())
+      } else {
+        promise.complete(Status.KO())
       }
     }
-
-    get("/liveness").handler(livenessHandler)
-    get("/readiness").handler(readinessHandler)
   }
+
+  get("/liveness").handler(livenessHandler)
+  get("/readiness").handler(readinessHandler)
+}

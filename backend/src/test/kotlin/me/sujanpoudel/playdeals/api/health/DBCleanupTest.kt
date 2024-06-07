@@ -10,19 +10,18 @@ import org.junit.jupiter.api.Test
 
 class DBCleanupTest(vertx: Vertx) : IntegrationTest(vertx) {
   @Test
-  fun `Does cleanup`() =
-    runTest {
-      val sqlClient = di.get<SqlClient>()
+  fun `Does cleanup`() = runTest {
+    val sqlClient = di.get<SqlClient>()
 
-      sqlClient
-        .query(CLEAN_UP_DB_QUERY).execute()
-        .onFailure { it.printStackTrace() }
+    sqlClient
+      .query(CLEAN_UP_DB_QUERY).execute()
+      .onFailure { it.printStackTrace() }
 
-      val totalDeals =
-        sqlClient.preparedQuery("""select count(*) from deal """)
-          .execute()
-          .coAwait().first().getInteger(0)
+    val totalDeals =
+      sqlClient.preparedQuery("""select count(*) from deal """)
+        .execute()
+        .coAwait().first().getInteger(0)
 
-      totalDeals shouldBe 0
-    }
+    totalDeals shouldBe 0
+  }
 }

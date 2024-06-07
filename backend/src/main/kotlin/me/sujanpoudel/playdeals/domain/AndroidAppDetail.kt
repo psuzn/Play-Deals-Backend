@@ -19,20 +19,19 @@ data class AndroidAppDetail(
   val source: String,
 )
 
-fun AndroidAppDetail.asNewDeal() =
-  NewDeal(
-    id = id,
-    name = name,
-    icon = icon,
-    images = images,
-    normalPrice = normalPrice,
-    currentPrice = currentPrice!!,
-    currency = currency,
-    storeUrl = storeUrl,
-    category = category,
-    downloads = downloads,
-    rating = rating,
-    offerExpiresIn = offerExpiresIn!!,
-    type = DealType.ANDROID_APP,
-    source = source,
-  )
+fun AndroidAppDetail.asNewDeal() = NewDeal(
+  id = id,
+  name = name,
+  icon = icon,
+  images = images,
+  normalPrice = normalPrice,
+  currentPrice = currentPrice!!,
+  currency = currency,
+  storeUrl = storeUrl,
+  category = category,
+  downloads = downloads,
+  rating = rating,
+  offerExpiresIn = offerExpiresIn!!,
+  type = DealType.ANDROID_APP,
+  source = source,
+)

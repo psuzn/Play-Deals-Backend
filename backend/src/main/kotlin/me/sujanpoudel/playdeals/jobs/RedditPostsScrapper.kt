@@ -41,38 +41,37 @@ class RedditPostsScrapper(
   }
   private val jobRequestScheduler by instance<JobRequestScheduler>()
 
-  override suspend fun handleRequest(jobRequest: Request): Unit =
-    loggingExecutionTime(
-      "$SIMPLE_NAME:: handleRequest",
-    ) {
-      val lastPostTime = keyValueRepository.get(LAST_REDDIT_POST_TIME)?.let(OffsetDateTime::parse)
+  override suspend fun handleRequest(jobRequest: Request): Unit = loggingExecutionTime(
+    "$SIMPLE_NAME:: handleRequest",
+  ) {
+    val lastPostTime = keyValueRepository.get(LAST_REDDIT_POST_TIME)?.let(OffsetDateTime::parse)
 
-      val posts =
-        loggingExecutionTime(
-          "$SIMPLE_NAME:: Fetched reddit post, last created post was at : '$lastPostTime'",
-        ) {
-          getLatestRedditPosts(lastPostTime ?: OffsetDateTime.MIN)
+    val posts =
+      loggingExecutionTime(
+        "$SIMPLE_NAME:: Fetched reddit post, last created post was at : '$lastPostTime'",
+      ) {
+        getLatestRedditPosts(lastPostTime ?: OffsetDateTime.MIN)
+      }
+
+    val appIds =
+      posts.flatMap { post ->
+        PLAY_CONSOLE_REGX.findAll(post.content).toList().mapNotNull {
+          it.groupValues.lastOrNull()
         }
+      }.distinct()
 
-      val appIds =
-        posts.flatMap { post ->
-          PLAY_CONSOLE_REGX.findAll(post.content).toList().mapNotNull {
-            it.groupValues.lastOrNull()
-          }
-        }.distinct()
+    logger.infoNotify("$SIMPLE_NAME:: got ${posts.size} new posts (${appIds.size} Links)")
 
-      logger.infoNotify("$SIMPLE_NAME:: got ${posts.size} new posts (${appIds.size} Links)")
-
-      appIds.forEach { packageName ->
-        val id = UUID.nameUUIDFromBytes(packageName.toByteArray())
-        jobRequestScheduler.enqueue(id, AppDetailScrapper.Request(packageName))
-      }
-
-      posts.firstOrNull()?.let {
-        logger.info("$SIMPLE_NAME:: Last reddit post was at ${it.createdAt} with id ${it.id}")
-        keyValueRepository.set(LAST_REDDIT_POST_TIME, it.createdAt.toString())
-      }
+    appIds.forEach { packageName ->
+      val id = UUID.nameUUIDFromBytes(packageName.toByteArray())
+      jobRequestScheduler.enqueue(id, AppDetailScrapper.Request(packageName))
     }
+
+    posts.firstOrNull()?.let {
+      logger.info("$SIMPLE_NAME:: Last reddit post was at ${it.createdAt} with id ${it.id}")
+      keyValueRepository.set(LAST_REDDIT_POST_TIME, it.createdAt.toString())
+    }
+  }
 
   private suspend fun getLatestRedditPosts(lastPostTime: OffsetDateTime): List<RedditPost> {
     val path = "/r/googleplaydeals/new.json?limit=100"
@@ -114,14 +113,13 @@ class RedditPostsScrapper(
     companion object {
       private val JOB_ID: UUID = UUID.nameUUIDFromBytes("Reddit Posts".toByteArray())
 
-      operator fun invoke(): RecurringJobBuilder =
-        RecurringJobBuilder.aRecurringJob()
-          .withJobRequest(Request())
-          .withAmountOfRetries(2)
-          .withLabels("Reddit")
-          .withName("Reddit Post Scrap")
-          .withId(JOB_ID.toString())
-          .withDuration(Duration.ofHours(1))
+      operator fun invoke(): RecurringJobBuilder = RecurringJobBuilder.aRecurringJob()
+        .withJobRequest(Request())
+        .withAmountOfRetries(2)
+        .withLabels("Reddit")
+        .withName("Reddit Post Scrap")
+        .withId(JOB_ID.toString())
+        .withDuration(Duration.ofHours(1))
     }
   }
 

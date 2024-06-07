@@ -51,14 +51,13 @@ class ForexFetcher(
 
   private val repository by instance<KeyValuesRepository>()
 
-  override suspend fun handleRequest(jobRequest: Request): Unit =
-    loggingExecutionTime(
-      "$SIMPLE_NAME:: handleRequest",
-    ) {
-      val rates = getForexRates()
-      logger.info("got ${rates.rates.size} forex rate")
-      repository.saveForexRate(rates)
-    }
+  override suspend fun handleRequest(jobRequest: Request): Unit = loggingExecutionTime(
+    "$SIMPLE_NAME:: handleRequest",
+  ) {
+    val rates = getForexRates()
+    logger.info("got ${rates.rates.size} forex rate")
+    repository.saveForexRate(rates)
+  }
 
   private suspend fun getForexRates(): ForexRate {
     val currencies = loadCurrencies()
@@ -97,13 +96,12 @@ class ForexFetcher(
     companion object {
       private val JOB_ID: UUID = UUID.nameUUIDFromBytes("ForexFetch".toByteArray())
 
-      operator fun invoke(): RecurringJobBuilder =
-        RecurringJobBuilder.aRecurringJob()
-          .withJobRequest(Request())
-          .withName("ForexFetch")
-          .withId(JOB_ID.toString())
-          .withDuration(Duration.ofDays(1))
-          .withAmountOfRetries(3)
+      operator fun invoke(): RecurringJobBuilder = RecurringJobBuilder.aRecurringJob()
+        .withJobRequest(Request())
+        .withName("ForexFetch")
+        .withId(JOB_ID.toString())
+        .withDuration(Duration.ofDays(1))
+        .withAmountOfRetries(3)
 
       fun immediate(): JobRequest = Request()
     }
@@ -112,10 +110,9 @@ class ForexFetcher(
 
 private const val KEY_FOREX_RATE = "FOREX_RATE"
 
-suspend fun KeyValuesRepository.getForexRate(): ForexRate? =
-  get(KEY_FOREX_RATE)?.let {
-    Json.decodeValue(it, ForexRate::class.java)
-  }
+suspend fun KeyValuesRepository.getForexRate(): ForexRate? = get(KEY_FOREX_RATE)?.let {
+  Json.decodeValue(it, ForexRate::class.java)
+}
 
 suspend fun KeyValuesRepository.saveForexRate(forexRate: ForexRate) = set(KEY_FOREX_RATE, Json.encode(forexRate))
 

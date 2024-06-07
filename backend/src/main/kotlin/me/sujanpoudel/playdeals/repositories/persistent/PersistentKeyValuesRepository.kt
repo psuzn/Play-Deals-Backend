@@ -10,10 +10,7 @@ import me.sujanpoudel.playdeals.repositories.KeyValuesRepository
 class PersistentKeyValuesRepository(
   private val sqlClient: SqlClient,
 ) : KeyValuesRepository {
-  override suspend fun set(
-    key: String,
-    value: String,
-  ): String {
+  override suspend fun set(key: String, value: String): String {
     return sqlClient.preparedQuery(
       """
       INSERT INTO "key_value_store" VALUES ($1,$2)

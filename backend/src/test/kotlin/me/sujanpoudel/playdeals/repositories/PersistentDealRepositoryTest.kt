@@ -41,108 +41,100 @@ class PersistentDealRepositoryTest(vertx: Vertx) : IntegrationTest(vertx) {
     )
 
   @Test
-  fun `should create new app deal in db`() =
-    runTest {
-      val appDeal = repository.upsert(newDeal)
+  fun `should create new app deal in db`() = runTest {
+    val appDeal = repository.upsert(newDeal)
 
-      val appDealFromDb =
-        sqlClient.preparedQuery(""" SELECT * from "deal" where id=$1""")
-          .exec(newDeal.id)
-          .coAwait()
-          .first()
-          .asAppDeal()
-
-      appDeal.shouldBeEqualToComparingFields(appDealFromDb)
-    }
-
-  @Test
-  fun `should perform update if item with id already exists`() =
-    runTest {
-      repository.upsert(newDeal)
-
-      repository.upsert(newDeal.copy(name = "Updated Name"))
-
-      val appDealFromDb =
-        sqlClient.preparedQuery(""" SELECT * from "deal" where id=$1""")
-          .exec(newDeal.id)
-          .coAwait()
-          .first()
-          .asAppDeal()
-
-      appDealFromDb.name.shouldBe("Updated Name")
-    }
-
-  @Test
-  fun `should delete app deal in db`() =
-    runTest {
-      repository.upsert(newDeal)
-      repository.delete(newDeal.id)
-
-      sqlClient.preparedQuery("""SELECT * from "deal" where id=$1""")
+    val appDealFromDb =
+      sqlClient.preparedQuery(""" SELECT * from "deal" where id=$1""")
         .exec(newDeal.id)
         .coAwait()
-        .rowCount() shouldBe 0
-    }
+        .first()
+        .asAppDeal()
+
+    appDeal.shouldBeEqualToComparingFields(appDealFromDb)
+  }
 
   @Test
-  fun `should be able to get all app deals from db`() =
-    runTest {
-      val deal0 = repository.upsert(newDeal)
-      val deal1 = repository.upsert(newDeal.copy(id = "id_1"))
+  fun `should perform update if item with id already exists`() = runTest {
+    repository.upsert(newDeal)
 
-      val appDeal = repository.getAll(0, 100)
+    repository.upsert(newDeal.copy(name = "Updated Name"))
 
-      appDeal shouldContainAll listOf(deal0, deal1)
-    }
+    val appDealFromDb =
+      sqlClient.preparedQuery(""" SELECT * from "deal" where id=$1""")
+        .exec(newDeal.id)
+        .coAwait()
+        .first()
+        .asAppDeal()
 
-  @Test
-  fun `should be able to get all app deals from db in order`() =
-    runTest {
-      val deal0 = repository.upsert(newDeal)
-      val deal1 = repository.upsert(newDeal.copy(id = "id_1"))
-
-      val appDeal = repository.getAll(0, 100)
-
-      appDeal shouldContainInOrder listOf(deal1, deal0)
-    }
+    appDealFromDb.name.shouldBe("Updated Name")
+  }
 
   @Test
-  fun `should get deals added after a time`() =
-    runTest {
-      val deal0 = repository.upsert(newDeal)
+  fun `should delete app deal in db`() = runTest {
+    repository.upsert(newDeal)
+    repository.delete(newDeal.id)
 
-      val now = OffsetDateTime.now()
-
-      val deal1 = repository.upsert(newDeal.copy(id = "id_1"))
-      val deal2 = repository.upsert(newDeal.copy(id = "id_2"))
-
-      repository.upsert(newDeal.copy(id = "id_2"))
-
-      val count = repository.getNewDeals(now)
-
-      count.shouldContainAll(deal1, deal2)
-    }
+    sqlClient.preparedQuery("""SELECT * from "deal" where id=$1""")
+      .exec(newDeal.id)
+      .coAwait()
+      .rowCount() shouldBe 0
+  }
 
   @Test
-  fun `getDealByPackageName should return correct deal by packageName`() =
-    runTest {
-      val deal0 = repository.upsert(newDeal)
+  fun `should be able to get all app deals from db`() = runTest {
+    val deal0 = repository.upsert(newDeal)
+    val deal1 = repository.upsert(newDeal.copy(id = "id_1"))
 
-      repository.upsert(newDeal.copy(id = "id_1"))
-      repository.upsert(newDeal.copy(id = "id_2"))
+    val appDeal = repository.getAll(0, 100)
 
-      val deal01 = repository.getDealByPackageName(deal0.id)
-
-      deal0 shouldBe deal01
-    }
+    appDeal shouldContainAll listOf(deal0, deal1)
+  }
 
   @Test
-  fun `getDealByPackageName should return null when there is no deal`() =
-    runTest {
-      val deal0 = repository.upsert(newDeal)
+  fun `should be able to get all app deals from db in order`() = runTest {
+    val deal0 = repository.upsert(newDeal)
+    val deal1 = repository.upsert(newDeal.copy(id = "id_1"))
 
-      val deal1 = repository.getDealByPackageName("id_3")
+    val appDeal = repository.getAll(0, 100)
 
-      deal1 shouldBe null
-    }
+    appDeal shouldContainInOrder listOf(deal1, deal0)
+  }
+
+  @Test
+  fun `should get deals added after a time`() = runTest {
+    val deal0 = repository.upsert(newDeal)
+
+    val now = OffsetDateTime.now()
+
+    val deal1 = repository.upsert(newDeal.copy(id = "id_1"))
+    val deal2 = repository.upsert(newDeal.copy(id = "id_2"))
+
+    repository.upsert(newDeal.copy(id = "id_2"))
+
+    val count = repository.getNewDeals(now)
+
+    count.shouldContainAll(deal1, deal2)
+  }
+
+  @Test
+  fun `getDealByPackageName should return correct deal by packageName`() = runTest {
+    val deal0 = repository.upsert(newDeal)
+
+    repository.upsert(newDeal.copy(id = "id_1"))
+    repository.upsert(newDeal.copy(id = "id_2"))
+
+    val deal01 = repository.getDealByPackageName(deal0.id)
+
+    deal0 shouldBe deal01
+  }
+
+  @Test
+  fun `getDealByPackageName should return null when there is no deal`() = runTest {
+    val deal0 = repository.upsert(newDeal)
+
+    val deal1 = repository.getDealByPackageName("id_3")
+
+    deal1 shouldBe null
+  }
 }

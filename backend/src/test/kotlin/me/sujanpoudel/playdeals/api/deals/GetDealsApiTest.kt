@@ -38,108 +38,103 @@ private val newDeal =
 
 class GetDealsApiTest(vertx: Vertx) : IntegrationTest(vertx) {
   @Test
-  fun `should send error if skip param is less than 0`() =
-    runTest {
-      val response =
-        httpClient.get("/api/deals/?skip=-1")
-          .send()
-          .coAwait()
+  fun `should send error if skip param is less than 0`() = runTest {
+    val response =
+      httpClient.get("/api/deals/?skip=-1")
+        .send()
+        .coAwait()
 
-      val responseBody = response.bodyAsJsonObject()
+    val responseBody = response.bodyAsJsonObject()
 
-      response.statusCode() shouldBe 400
-      responseBody.getString("message") shouldBe "skip Can't be less than 0"
-    }
+    response.statusCode() shouldBe 400
+    responseBody.getString("message") shouldBe "skip Can't be less than 0"
+  }
 
   @Test
-  fun `should send error if take param is less than 1`() =
-    runTest {
-      val response =
-        httpClient.get("/api/deals/?take=0")
-          .send()
-          .coAwait()
+  fun `should send error if take param is less than 1`() = runTest {
+    val response =
+      httpClient.get("/api/deals/?take=0")
+        .send()
+        .coAwait()
 
-      val responseBody = response.bodyAsJsonObject()
+    val responseBody = response.bodyAsJsonObject()
 
-      response.statusCode() shouldBe 400
-      responseBody.getString("message") shouldBe "take Can't be less than 1"
-    }
+    response.statusCode() shouldBe 400
+    responseBody.getString("message") shouldBe "take Can't be less than 1"
+  }
 
   @Test
-  fun `should return app deals`() =
-    runTest {
-      val repository = di.get<DealRepository>()
+  fun `should return app deals`() = runTest {
+    val repository = di.get<DealRepository>()
 
-      val app0 = repository.upsert(newDeal)
-      val app1 = repository.upsert(newDeal.copy(id = "id1"))
+    val app0 = repository.upsert(newDeal)
+    val app1 = repository.upsert(newDeal.copy(id = "id1"))
 
-      val response =
-        httpClient.get("/api/deals/")
-          .send()
-          .coAwait()
+    val response =
+      httpClient.get("/api/deals/")
+        .send()
+        .coAwait()
 
-      val deals: ApiResponse<List<DealEntity>> = di.get<ObjectMapper>().readValue(response.bodyAsString())
+    val deals: ApiResponse<List<DealEntity>> = di.get<ObjectMapper>().readValue(response.bodyAsString())
 
-      response.statusCode() shouldBe 200
-      deals.data!!.size shouldBe 2
-      deals.data.shouldContainAll(listOf(app0, app1))
-    }
+    response.statusCode() shouldBe 200
+    deals.data!!.size shouldBe 2
+    deals.data.shouldContainAll(listOf(app0, app1))
+  }
 
   @Test
-  fun `should correctly handle skip parameter`() =
-    runTest {
-      val repository = di.get<DealRepository>()
+  fun `should correctly handle skip parameter`() = runTest {
+    val repository = di.get<DealRepository>()
 
-      repository.upsert(newDeal)
-      repository.upsert(newDeal.copy(id = "id1"))
-      repository.upsert(newDeal.copy(id = "id2"))
-      repository.upsert(newDeal.copy(id = "id3"))
+    repository.upsert(newDeal)
+    repository.upsert(newDeal.copy(id = "id1"))
+    repository.upsert(newDeal.copy(id = "id2"))
+    repository.upsert(newDeal.copy(id = "id3"))
 
-      httpClient.get("/api/deals?skip=1")
-        .send()
-        .coAwait().also { response ->
-          val deals: ApiResponse<List<DealEntity>> = di.get<ObjectMapper>().readValue(response.bodyAsString())
+    httpClient.get("/api/deals?skip=1")
+      .send()
+      .coAwait().also { response ->
+        val deals: ApiResponse<List<DealEntity>> = di.get<ObjectMapper>().readValue(response.bodyAsString())
 
-          response.statusCode() shouldBe 200
-          deals.data!!.size shouldBe 3
-        }
+        response.statusCode() shouldBe 200
+        deals.data!!.size shouldBe 3
+      }
 
-      httpClient.get("/api/deals?skip=3")
-        .send()
-        .coAwait().also { response ->
-          val deals: ApiResponse<List<DealEntity>> = di.get<ObjectMapper>().readValue(response.bodyAsString())
+    httpClient.get("/api/deals?skip=3")
+      .send()
+      .coAwait().also { response ->
+        val deals: ApiResponse<List<DealEntity>> = di.get<ObjectMapper>().readValue(response.bodyAsString())
 
-          response.statusCode() shouldBe 200
-          deals.data!!.size shouldBe 1
-        }
-    }
+        response.statusCode() shouldBe 200
+        deals.data!!.size shouldBe 1
+      }
+  }
 
   @Test
-  fun `should correctly handle take parameter`() =
-    runTest {
-      val repository = di.get<PersistentDealRepository>()
+  fun `should correctly handle take parameter`() = runTest {
+    val repository = di.get<PersistentDealRepository>()
 
-      repository.upsert(newDeal)
-      repository.upsert(newDeal.copy(id = "id1"))
-      repository.upsert(newDeal.copy(id = "id2"))
-      repository.upsert(newDeal.copy(id = "id3"))
+    repository.upsert(newDeal)
+    repository.upsert(newDeal.copy(id = "id1"))
+    repository.upsert(newDeal.copy(id = "id2"))
+    repository.upsert(newDeal.copy(id = "id3"))
 
-      httpClient.get("/api/deals?take=2")
-        .send()
-        .coAwait().also { response ->
-          val deals: ApiResponse<List<DealEntity>> = di.get<ObjectMapper>().readValue(response.bodyAsString())
+    httpClient.get("/api/deals?take=2")
+      .send()
+      .coAwait().also { response ->
+        val deals: ApiResponse<List<DealEntity>> = di.get<ObjectMapper>().readValue(response.bodyAsString())
 
-          response.statusCode() shouldBe 200
-          deals.data!!.size shouldBe 2
-        }
+        response.statusCode() shouldBe 200
+        deals.data!!.size shouldBe 2
+      }
 
-      httpClient.get("/api/deals?take=1")
-        .send()
-        .coAwait().also { response ->
-          val deals: ApiResponse<List<DealEntity>> = di.get<ObjectMapper>().readValue(response.bodyAsString())
+    httpClient.get("/api/deals?take=1")
+      .send()
+      .coAwait().also { response ->
+        val deals: ApiResponse<List<DealEntity>> = di.get<ObjectMapper>().readValue(response.bodyAsString())
 
-          response.statusCode() shouldBe 200
-          deals.data!!.size shouldBe 1
-        }
-    }
+        response.statusCode() shouldBe 200
+        deals.data!!.size shouldBe 1
+      }
+  }
 }

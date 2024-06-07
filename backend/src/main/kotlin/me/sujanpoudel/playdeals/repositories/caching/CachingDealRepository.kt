@@ -27,10 +27,7 @@ class CachingDealRepository(
     }
   }
 
-  override suspend fun getAll(
-    skip: Int,
-    take: Int,
-  ): List<DealEntity> {
+  override suspend fun getAll(skip: Int, take: Int): List<DealEntity> {
     initialize()
     return if (cacheInitialized) {
       cache.values.toList().drop(skip).take(take)

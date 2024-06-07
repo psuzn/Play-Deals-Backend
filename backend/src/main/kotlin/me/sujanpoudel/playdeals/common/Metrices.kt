@@ -4,10 +4,7 @@ import me.sujanpoudel.playdeals.logger
 import kotlin.time.DurationUnit
 import kotlin.time.measureTimedValue
 
-inline fun <T> loggingExecutionTime(
-  message: String,
-  action: () -> T,
-): T {
+inline fun <T> loggingExecutionTime(message: String, action: () -> T): T {
   val timedValue =
     measureTimedValue {
       action.invoke()
