@@ -64,7 +64,7 @@ class AppDetailScrapper(
       getAppDetail(packageName)
     }.getOrElse {
       repository.delete(packageName)
-      throw RuntimeException("AppDetailScrapper failed to scrap details ${it.message}")
+      throw RuntimeException("AppDetailScrapper failed to scrap details ${it.message}", it)
     }
 
     when {
@@ -164,7 +164,7 @@ class AppDetailScrapper(
   companion object {
     const val PRICE_MULTIPLIER = 1000_000f
     val INIT_DATA_PATTERN: Pattern =
-      Pattern.compile("<script [A-Za-z-0-9=_\"]+>AF_initDataCallback\\((\\{.*?\\})\\);")
+      Pattern.compile("<script [A-Za-z-0-9=_\": ]+>AF_initDataCallback\\((\\{.*?\\})\\);")
   }
 
   data class Request(val packageName: String) : JobRequest {
