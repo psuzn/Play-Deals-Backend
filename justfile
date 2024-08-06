@@ -45,7 +45,8 @@ helm-upgrade imageTag=tag:
         --set firebaseAdminAuthCredential=$FIREBASE_ADMIN_AUTH_CREDENTIALS \
         --set forexApiKey=$FOREX_API_KEY \
         --set image.tag={{imageTag}} \
-        --set image.repository={{imageRepo}}
+        --set image.repository={{imageRepo}} \
+        --set namespace={{namespace}}
 
 # Uninstalls the helm chart
 helm-delete:

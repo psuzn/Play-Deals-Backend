@@ -63,6 +63,7 @@ class AppDetailScrapper(
     val app = loggingExecutionTime("$SIMPLE_NAME:: scrapping app details $packageName") {
       getAppDetail(packageName)
     }.getOrElse {
+      repository.delete(packageName)
       throw RuntimeException("AppDetailScrapper failed to scrap details ${it.message}")
     }
 
@@ -121,10 +122,9 @@ class AppDetailScrapper(
       id = packageName,
       name = combined.getValue(Value.TITLE),
       icon = combined.getValue(Value.ICON),
-      images =
-        (combined.getValue(Value.SCREENSHOTS_LIST) as JsonArray).mapNotNull {
-          getValue(it as JsonArray, Value.SCREENSHOTS_URL.path.toTypedArray()) as? String
-        },
+      images = (combined.getValue(Value.SCREENSHOTS_LIST) as JsonArray).mapNotNull {
+        getValue(it as JsonArray, Value.SCREENSHOTS_URL.path.toTypedArray()) as? String
+      },
       normalPrice = normalPrice,
       currency = combined.getValue(Value.CURRENCY) as String,
       currentPrice = currentPrice,
@@ -132,10 +132,9 @@ class AppDetailScrapper(
       downloads = combined.getValue(Value.INSTALLS),
       storeUrl = "https://play.google.com/store/apps/details?id=$packageName",
       category = combined.getValue(Value.GENRE) as String,
-      offerExpiresIn =
-        combined.getValueOrNull<Int>(Value.OFFER_END_TIME)?.let {
-          OffsetDateTime.ofInstant(Instant.ofEpochSecond(it.toLong()), ZoneOffset.UTC)
-        },
+      offerExpiresIn = combined.getValueOrNull<Int>(Value.OFFER_END_TIME)?.let {
+        OffsetDateTime.ofInstant(Instant.ofEpochSecond(it.toLong()), ZoneOffset.UTC)
+      },
       source = Constants.DealSources.APP_DEAL_SUBREDDIT,
     )
   }
